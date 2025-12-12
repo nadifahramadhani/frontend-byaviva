@@ -1,26 +1,656 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@layer components {
+  .all-\[unset\] {
+    all: unset;
+  }
 }
+@theme {
+  /* --- COLORS --- */
+  --color-blackblack-500: var(--blackblack-500);
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  /* Foundation Accent 1 */
+  --color-foundation-accent-1dark: var(--foundation-accent-1dark);
+  --color-foundation-accent-1dark-active: var(--foundation-accent-1dark-active);
+  --color-foundation-accent-1dark-hover: var(--foundation-accent-1dark-hover);
+  --color-foundation-accent-1darker: var(--foundation-accent-1darker);
+  --color-foundation-accent-1light: var(--foundation-accent-1light);
+  --color-foundation-accent-1light-active: var(
+    --foundation-accent-1light-active
+  );
+  --color-foundation-accent-1light-hover: var(--foundation-accent-1light-hover);
+  --color-foundation-accent-1normal: var(--foundation-accent-1normal);
+  --color-foundation-accent-1normal-active: var(
+    --foundation-accent-1normal-active
+  );
+  --color-foundation-accent-1normal-hover: var(
+    --foundation-accent-1normal-hover
+  );
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  /* Foundation Accent 2 */
+  --color-foundation-accent-2dark: var(--foundation-accent-2dark);
+  --color-foundation-accent-2dark-active: var(--foundation-accent-2dark-active);
+  --color-foundation-accent-2dark-hover: var(--foundation-accent-2dark-hover);
+  --color-foundation-accent-2darker: var(--foundation-accent-2darker);
+  --color-foundation-accent-2light: var(--foundation-accent-2light);
+  --color-foundation-accent-2light-active: var(
+    --foundation-accent-2light-active
+  );
+  --color-foundation-accent-2light-hover: var(--foundation-accent-2light-hover);
+  --color-foundation-accent-2normal: var(--foundation-accent-2normal);
+  --color-foundation-accent-2normal-active: var(
+    --foundation-accent-2normal-active
+  );
+  --color-foundation-accent-2normal-hover: var(
+    --foundation-accent-2normal-hover
+  );
+
+  /* Foundation Alert */
+  --color-foundation-allertdark: var(--foundation-allertdark);
+  --color-foundation-allertdark-active: var(--foundation-allertdark-active);
+  --color-foundation-allertdark-hover: var(--foundation-allertdark-hover);
+  --color-foundation-allertdarker: var(--foundation-allertdarker);
+  --color-foundation-allertlight: var(--foundation-allertlight);
+  --color-foundation-allertlight-active: var(--foundation-allertlight-active);
+  --color-foundation-allertlight-hover: var(--foundation-allertlight-hover);
+  --color-foundation-allertnormal: var(--foundation-allertnormal);
+  --color-foundation-allertnormal-active: var(--foundation-allertnormal-active);
+  --color-foundation-allertnormal-hover: var(--foundation-allertnormal-hover);
+
+  /* Foundation Background */
+  --color-foundation-backgrounddark: var(--foundation-backgrounddark);
+  --color-foundation-backgrounddark-active: var(
+    --foundation-backgrounddark-active
+  );
+  --color-foundation-backgrounddark-hover: var(
+    --foundation-backgrounddark-hover
+  );
+  --color-foundation-backgrounddarker: var(--foundation-backgrounddarker);
+  --color-foundation-backgroundlight: var(--foundation-backgroundlight);
+  --color-foundation-backgroundlight-active: var(
+    --foundation-backgroundlight-active
+  );
+  --color-foundation-backgroundlight-hover: var(
+    --foundation-backgroundlight-hover
+  );
+  --color-foundation-backgroundnormal: var(--foundation-backgroundnormal);
+  --color-foundation-backgroundnormal-active: var(
+    --foundation-backgroundnormal-active
+  );
+  --color-foundation-backgroundnormal-hover: var(
+    --foundation-backgroundnormal-hover
+  );
+
+  /* Foundation Black */
+  --color-foundation-blackdark: var(--foundation-blackdark);
+  --color-foundation-blackdark-active: var(--foundation-blackdark-active);
+  --color-foundation-blackdark-hover: var(--foundation-blackdark-hover);
+  --color-foundation-blackdarker: var(--foundation-blackdarker);
+  --color-foundation-blacklight: var(--foundation-blacklight);
+  --color-foundation-blacklight-active: var(--foundation-blacklight-active);
+  --color-foundation-blacklight-hover: var(--foundation-blacklight-hover);
+  --color-foundation-blacknormal: var(--foundation-blacknormal);
+  --color-foundation-blacknormal-active: var(--foundation-blacknormal-active);
+  --color-foundation-blacknormal-hover: var(--foundation-blacknormal-hover);
+
+  /* Foundation Primary */
+  --color-foundation-primarydark: var(--foundation-primarydark);
+  --color-foundation-primarydark-active: var(--foundation-primarydark-active);
+  --color-foundation-primarydark-hover: var(--foundation-primarydark-hover);
+  --color-foundation-primarydarker: var(--foundation-primarydarker);
+  --color-foundation-primarylight: var(--foundation-primarylight);
+  --color-foundation-primarylight-active: var(--foundation-primarylight-active);
+  --color-foundation-primarylight-hover: var(--foundation-primarylight-hover);
+  --color-foundation-primarynormal: var(--foundation-primarynormal);
+  --color-foundation-primarynormal-active: var(
+    --foundation-primarynormal-active
+  );
+  --color-foundation-primarynormal-hover: var(--foundation-primarynormal-hover);
+
+  /* Foundation Secondary */
+  --color-foundation-secondarydark: var(--foundation-secondarydark);
+  --color-foundation-secondarydark-active: var(
+    --foundation-secondarydark-active
+  );
+  --color-foundation-secondarydark-hover: var(--foundation-secondarydark-hover);
+  --color-foundation-secondarydarker: var(--foundation-secondarydarker);
+  --color-foundation-secondarylight: var(--foundation-secondarylight);
+  --color-foundation-secondarylight-active: var(
+    --foundation-secondarylight-active
+  );
+  --color-foundation-secondarylight-hover: var(
+    --foundation-secondarylight-hover
+  );
+  --color-foundation-secondarynormal: var(--foundation-secondarynormal);
+  --color-foundation-secondarynormal-active: var(
+    --foundation-secondarynormal-active
+  );
+  --color-foundation-secondarynormal-hover: var(
+    --foundation-secondarynormal-hover
+  );
+
+  /* Foundation Text Primary */
+  --color-foundation-text-primarydark: var(--foundation-text-primarydark);
+  --color-foundation-text-primarydark-active: var(
+    --foundation-text-primarydark-active
+  );
+  --color-foundation-text-primarydark-hover: var(
+    --foundation-text-primarydark-hover
+  );
+  --color-foundation-text-primarydarker: var(--foundation-text-primarydarker);
+  --color-foundation-text-primarylight: var(--foundation-text-primarylight);
+  --color-foundation-text-primarylight-active: var(
+    --foundation-text-primarylight-active
+  );
+  --color-foundation-text-primarylight-hover: var(
+    --foundation-text-primarylight-hover
+  );
+  --color-foundation-text-primarynormal: var(--foundation-text-primarynormal);
+  --color-foundation-text-primarynormal-active: var(
+    --foundation-text-primarynormal-active
+  );
+  --color-foundation-text-primarynormal-hover: var(
+    --foundation-text-primarynormal-hover
+  );
+
+  /* Foundation Text Secondary */
+  --color-foundation-text-secondarydark: var(--foundation-text-secondarydark);
+  --color-foundation-text-secondarydark-active: var(
+    --foundation-text-secondarydark-active
+  );
+  --color-foundation-text-secondarydark-hover: var(
+    --foundation-text-secondarydark-hover
+  );
+  --color-foundation-text-secondarydarker: var(
+    --foundation-text-secondarydarker
+  );
+  --color-foundation-text-secondarylight: var(--foundation-text-secondarylight);
+  --color-foundation-text-secondarylight-active: var(
+    --foundation-text-secondarylight-active
+  );
+  --color-foundation-text-secondarylight-hover: var(
+    --foundation-text-secondarylight-hover
+  );
+  --color-foundation-text-secondarynormal: var(
+    --foundation-text-secondarynormal
+  );
+  --color-foundation-text-secondarynormal-active: var(
+    --foundation-text-secondarynormal-active
+  );
+  --color-foundation-text-secondarynormal-hover: var(
+    --foundation-text-secondarynormal-hover
+  );
+
+  /* Foundation White */
+  --color-foundation-whitedark: var(--foundation-whitedark);
+  --color-foundation-whitedark-active: var(--foundation-whitedark-active);
+  --color-foundation-whitedark-hover: var(--foundation-whitedark-hover);
+  --color-foundation-whitedarker: var(--foundation-whitedarker);
+  --color-foundation-whitelight: var(--foundation-whitelight);
+  --color-foundation-whitelight-active: var(--foundation-whitelight-active);
+  --color-foundation-whitelight-hover: var(--foundation-whitelight-hover);
+  --color-foundation-whitenormal: var(--foundation-whitenormal);
+  --color-foundation-whitenormal-active: var(--foundation-whitenormal-active);
+  --color-foundation-whitenormal-hover: var(--foundation-whitenormal-hover);
+
+  /* Neutrals */
+  --color-neutrals-400: var(--neutrals-400);
+  --color-neutrals-800: var(--neutrals-800);
+  --color-neutralswhite: var(--neutralswhite);
+
+  /* --- FONTS --- */
+  --font-body-p1-b: var(--body-p1-b-font-family);
+  --font-body-p1-r: var(--body-p1-r-font-family);
+  --font-body-p2-b: var(--body-p2-b-font-family);
+  --font-body-p2-r: var(--body-p2-r-font-family);
+  --font-body-p3-b: var(--body-p3-b-font-family);
+  --font-body-p3-r: var(--body-p3-r-font-family);
+
+  --font-headings-h1: var(--headings-h1-font-family);
+  --font-headings-h2: var(--headings-h2-font-family);
+  --font-headings-h3: var(--headings-h3-font-family);
+  --font-headings-h4: var(--headings-h4-font-family);
+  --font-headings-h5: var(--headings-h5-font-family);
+  --font-headings-heading-m: var(--headings-heading-m-font-family);
+
+  --font-labels-l1-b: var(--labels-l1-b-font-family);
+  --font-labels-l1-r: var(--labels-l1-r-font-family);
+  --font-labels-l2-b: var(--labels-l2-b-font-family);
+  --font-labels-l2-r: var(--labels-l2-r-font-family);
+  --font-labels-l3-b: var(--labels-l3-b-font-family);
+  --font-labels-l3-r: var(--labels-l3-r-font-family);
+
+  --font-WF-body-body-medium: var(--WF-body-body-medium-font-family);
+
+  /* Animations */
+  --animate-spin: spin 1s linear infinite;
+  --animate-fade-in: fade-in 1s var(--animation-delay, 0s) ease forwards;
+  --animate-fade-up: fade-up 1s var(--animation-delay, 0s) ease forwards;
+  --animate-marquee: marquee var(--duration) infinite linear;
+  --animate-marquee-vertical: marquee-vertical var(--duration) linear infinite;
+  --animate-shimmer: shimmer 8s infinite;
+
+  /* Keyframes */
+  @keyframes spin {
+    to {
+      transform: rotate(1turn);
+    }
+  }
+  @keyframes fade-in {
+    0% {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @keyframes fade-up {
+    0% {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @keyframes shimmer {
+    0%,
+    90%,
+    to {
+      background-position: calc(-100% - var(--shimmer-width)) 0;
+    }
+    30%,
+    60% {
+      background-position: calc(100% + var(--shimmer-width)) 0;
+    }
+  }
+  @keyframes marquee {
+    0% {
+      transform: translate(0);
+    }
+    to {
+      transform: translateX(calc(-100% - var(--gap)));
+    }
+  }
+  @keyframes marquee-vertical {
+    0% {
+      transform: translateY(0);
+    }
+    to {
+      transform: translateY(calc(-100% - var(--gap)));
+    }
+  }
+  @keyframes image-glow {
+    0% {
+      opacity: 0;
+      animation-timing-function: cubic-bezier(0.74, 0.25, 0.76, 1);
+    }
+    10% {
+      opacity: 0.7;
+      animation-timing-function: cubic-bezier(0.12, 0.01, 0.08, 0.99);
+    }
+    to {
+      opacity: 0.4;
+    }
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* 2. DEFINISI NILAI VARIABLE (:root) */
+/* Ini nilai asli (Hex/RGB/Font) dari Figma */
+:root {
+  /* COLORS */
+  --blackblack-500: rgba(0, 0, 0, 1);
+
+  --foundation-accent-1dark: rgba(191, 137, 2, 1);
+  --foundation-accent-1dark-active: rgba(115, 82, 1, 1);
+  --foundation-accent-1dark-hover: rgba(153, 110, 2, 1);
+  --foundation-accent-1darker: rgba(89, 64, 1, 1);
+  --foundation-accent-1light: rgba(255, 248, 230, 1);
+  --foundation-accent-1light-active: rgba(255, 233, 177, 1);
+  --foundation-accent-1light-hover: rgba(255, 244, 217, 1);
+  --foundation-accent-1normal: rgba(255, 183, 3, 1);
+  --foundation-accent-1normal-active: rgba(204, 146, 2, 1);
+  --foundation-accent-1normal-hover: rgba(230, 165, 3, 1);
+
+  --foundation-accent-2dark: rgba(168, 119, 47, 1);
+  --foundation-accent-2dark-active: rgba(101, 72, 28, 1);
+  --foundation-accent-2dark-hover: rgba(134, 95, 37, 1);
+  --foundation-accent-2darker: rgba(78, 56, 22, 1);
+  --foundation-accent-2light: rgba(252, 245, 236, 1);
+  --foundation-accent-2light-active: rgba(245, 225, 195, 1);
+  --foundation-accent-2light-hover: rgba(250, 241, 226, 1);
+  --foundation-accent-2normal: rgba(224, 159, 62, 1);
+  --foundation-accent-2normal-active: rgba(179, 127, 50, 1);
+  --foundation-accent-2normal-hover: rgba(202, 143, 56, 1);
+
+  --foundation-allertdark: rgba(119, 32, 32, 1);
+  --foundation-allertdark-active: rgba(71, 19, 19, 1);
+  --foundation-allertdark-hover: rgba(95, 25, 26, 1);
+  --foundation-allertdarker: rgba(55, 15, 15, 1);
+  --foundation-allertlight: rgba(245, 234, 234, 1);
+  --foundation-allertlight-active: rgba(225, 189, 189, 1);
+  --foundation-allertlight-hover: rgba(240, 223, 223, 1);
+  --foundation-allertnormal: rgba(158, 42, 43, 1);
+  --foundation-allertnormal-active: rgba(126, 34, 34, 1);
+  --foundation-allertnormal-hover: rgba(142, 38, 39, 1);
+
+  --foundation-backgrounddark: rgba(191, 182, 132, 1);
+  --foundation-backgrounddark-active: rgba(115, 109, 79, 1);
+  --foundation-backgrounddark-hover: rgba(153, 146, 106, 1);
+  --foundation-backgrounddarker: rgba(89, 85, 62, 1);
+  --foundation-backgroundlight: rgba(255, 254, 247, 1);
+  --foundation-backgroundlight-active: rgba(255, 251, 231, 1);
+  --foundation-backgroundlight-hover: rgba(255, 253, 243, 1);
+  --foundation-backgroundnormal: rgba(255, 243, 176, 1);
+  --foundation-backgroundnormal-active: rgba(204, 194, 141, 1);
+  --foundation-backgroundnormal-hover: rgba(230, 219, 158, 1);
+
+  --foundation-blackdark: rgba(0, 0, 0, 1);
+  --foundation-blackdark-active: rgba(0, 0, 0, 1);
+  --foundation-blackdark-hover: rgba(0, 0, 0, 1);
+  --foundation-blackdarker: rgba(0, 0, 0, 1);
+  --foundation-blacklight: rgba(230, 230, 230, 1);
+  --foundation-blacklight-active: rgba(176, 176, 176, 1);
+  --foundation-blacklight-hover: rgba(217, 217, 217, 1);
+  --foundation-blacknormal: rgba(0, 0, 0, 1);
+  --foundation-blacknormal-active: rgba(0, 0, 0, 1);
+  --foundation-blacknormal-hover: rgba(0, 0, 0, 1);
+
+  --foundation-primarydark: rgba(25, 119, 141, 1);
+  --foundation-primarydark-active: rgba(15, 71, 85, 1);
+  --foundation-primarydark-hover: rgba(20, 95, 113, 1);
+  --foundation-primarydarker: rgba(12, 55, 66, 1);
+  --foundation-primarylight: rgba(233, 245, 248, 1);
+  --foundation-primarylight-active: rgba(186, 225, 234, 1);
+  --foundation-primarylight-hover: rgba(222, 240, 245, 1);
+  --foundation-primarynormal: rgba(33, 158, 188, 1);
+  --foundation-primarynormal-active: rgba(26, 126, 150, 1);
+  --foundation-primarynormal-hover: rgba(30, 142, 169, 1);
+
+  --foundation-secondarydark: rgba(38, 69, 77, 1);
+  --foundation-secondarydark-active: rgba(23, 41, 46, 1);
+  --foundation-secondarydark-hover: rgba(31, 55, 62, 1);
+  --foundation-secondarydarker: rgba(18, 32, 36, 1);
+  --foundation-secondarylight: rgba(235, 239, 240, 1);
+  --foundation-secondarylight-active: rgba(192, 204, 208, 1);
+  --foundation-secondarylight-hover: rgba(224, 231, 232, 1);
+  --foundation-secondarynormal: rgba(51, 92, 103, 1);
+  --foundation-secondarynormal-active: rgba(41, 74, 82, 1);
+  --foundation-secondarynormal-hover: rgba(46, 83, 93, 1);
+
+  --foundation-text-primarydark: rgba(2, 36, 53, 1);
+  --foundation-text-primarydark-active: rgba(1, 22, 32, 1);
+  --foundation-text-primarydark-hover: rgba(1, 29, 43, 1);
+  --foundation-text-primarydarker: rgba(1, 17, 25, 1);
+  --foundation-text-primarylight: rgba(230, 234, 237, 1);
+  --foundation-text-primarylight-active: rgba(177, 191, 198, 1);
+  --foundation-text-primarylight-hover: rgba(217, 224, 227, 1);
+  --foundation-text-primarynormal: rgba(2, 48, 71, 1);
+  --foundation-text-primarynormal-active: rgba(2, 38, 57, 1);
+  --foundation-text-primarynormal-hover: rgba(2, 43, 64, 1);
+
+  --foundation-text-secondarydark: rgba(23, 31, 44, 1);
+  --foundation-text-secondarydark-active: rgba(13, 18, 27, 1);
+  --foundation-text-secondarydark-hover: rgba(18, 25, 35, 1);
+  --foundation-text-secondarydarker: rgba(11, 14, 21, 1);
+  --foundation-text-secondarylight: rgba(233, 234, 235, 1);
+  --foundation-text-secondarylight-active: rgba(185, 189, 194, 1);
+  --foundation-text-secondarylight-hover: rgba(221, 223, 226, 1);
+  --foundation-text-secondarynormal: rgba(30, 41, 59, 1);
+  --foundation-text-secondarynormal-active: rgba(24, 33, 47, 1);
+  --foundation-text-secondarynormal-hover: rgba(27, 37, 53, 1);
+
+  --foundation-whitedark: rgba(191, 191, 191, 1);
+  --foundation-whitedark-active: rgba(115, 115, 115, 1);
+  --foundation-whitedark-hover: rgba(153, 153, 153, 1);
+  --foundation-whitedarker: rgba(89, 89, 89, 1);
+  --foundation-whitelight: rgba(255, 255, 255, 1);
+  --foundation-whitelight-active: rgba(255, 255, 255, 1);
+  --foundation-whitelight-hover: rgba(255, 255, 255, 1);
+  --foundation-whitenormal: rgba(255, 255, 255, 1);
+  --foundation-whitenormal-active: rgba(204, 204, 204, 1);
+  --foundation-whitenormal-hover: rgba(230, 230, 230, 1);
+
+  --neutrals-400: rgba(203, 210, 224, 1);
+  --neutrals-800: rgba(45, 54, 72, 1);
+  --neutralswhite: rgba(255, 255, 255, 1);
+
+  /* FONTS */
+  --body-p1-b-font-family: "Lato", Helvetica;
+  --body-p1-b-font-size: 16px;
+  --body-p1-b-font-style: normal;
+  --body-p1-b-font-weight: 500;
+  --body-p1-b-letter-spacing: 0px;
+  --body-p1-b-line-height: 150%;
+
+  --body-p1-r-font-family: "Lato", Helvetica;
+  --body-p1-r-font-size: 16px;
+  --body-p1-r-font-style: normal;
+  --body-p1-r-font-weight: 400;
+  --body-p1-r-letter-spacing: 0px;
+  --body-p1-r-line-height: 150%;
+
+  --body-p2-b-font-family: "Lato", Helvetica;
+  --body-p2-b-font-size: 14px;
+  --body-p2-b-font-style: normal;
+  --body-p2-b-font-weight: 500;
+  --body-p2-b-letter-spacing: 0px;
+  --body-p2-b-line-height: 150%;
+
+  --body-p2-r-font-family: "Lato", Helvetica;
+  --body-p2-r-font-size: 14px;
+  --body-p2-r-font-style: normal;
+  --body-p2-r-font-weight: 400;
+  --body-p2-r-letter-spacing: 0px;
+  --body-p2-r-line-height: 150%;
+
+  --body-p3-b-font-family: "Lato", Helvetica;
+  --body-p3-b-font-size: 12px;
+  --body-p3-b-font-style: normal;
+  --body-p3-b-font-weight: 500;
+  --body-p3-b-letter-spacing: 0px;
+  --body-p3-b-line-height: 150%;
+
+  --body-p3-r-font-family: "Lato", Helvetica;
+  --body-p3-r-font-size: 12px;
+  --body-p3-r-font-style: normal;
+  --body-p3-r-font-weight: 400;
+  --body-p3-r-letter-spacing: 0px;
+  --body-p3-r-line-height: 150%;
+
+  --headings-h1-font-family: "Montserrat", Helvetica;
+  --headings-h1-font-size: 40px;
+  --headings-h1-font-style: normal;
+  --headings-h1-font-weight: 600;
+  --headings-h1-letter-spacing: 0px;
+  --headings-h1-line-height: 125%;
+
+  --headings-h2-font-family: "Montserrat", Helvetica;
+  --headings-h2-font-size: 32px;
+  --headings-h2-font-style: normal;
+  --headings-h2-font-weight: 600;
+  --headings-h2-letter-spacing: -1.28px;
+  --headings-h2-line-height: 125%;
+
+  --headings-h3-font-family: "Montserrat", Helvetica;
+  --headings-h3-font-size: 24px;
+  --headings-h3-font-style: normal;
+  --headings-h3-font-weight: 600;
+  --headings-h3-letter-spacing: -0.96px;
+  --headings-h3-line-height: 125%;
+
+  --headings-h4-font-family: "Montserrat", Helvetica;
+  --headings-h4-font-size: 18px;
+  --headings-h4-font-style: normal;
+  --headings-h4-font-weight: 600;
+  --headings-h4-letter-spacing: 0px;
+  --headings-h4-line-height: 125%;
+
+  --headings-h5-font-family: "Montserrat", Helvetica;
+  --headings-h5-font-size: 14px;
+  --headings-h5-font-style: normal;
+  --headings-h5-font-weight: 600;
+  --headings-h5-letter-spacing: 0px;
+  --headings-h5-line-height: 125%;
+
+  --headings-heading-m-font-family: "Inter", Helvetica;
+  --headings-heading-m-font-size: 32px;
+  --headings-heading-m-font-style: normal;
+  --headings-heading-m-font-weight: 700;
+  --headings-heading-m-letter-spacing: 0px;
+  --headings-heading-m-line-height: 129.99999523162842%;
+
+  --labels-l1-b-font-family: "Nunito Sans", Helvetica;
+  --labels-l1-b-font-size: 16px;
+  --labels-l1-b-font-style: normal;
+  --labels-l1-b-font-weight: 700;
+  --labels-l1-b-letter-spacing: 0.48px;
+  --labels-l1-b-line-height: 124.00000095367432%;
+
+  --labels-l1-r-font-family: "Nunito Sans", Helvetica;
+  --labels-l1-r-font-size: 16px;
+  --labels-l1-r-font-style: normal;
+  --labels-l1-r-font-weight: 600;
+  --labels-l1-r-letter-spacing: 0.48px;
+  --labels-l1-r-line-height: 124.00000095367432%;
+
+  --labels-l2-b-font-family: "Nunito Sans", Helvetica;
+  --labels-l2-b-font-size: 14px;
+  --labels-l2-b-font-style: normal;
+  --labels-l2-b-font-weight: 700;
+  --labels-l2-b-letter-spacing: 0.42px;
+  --labels-l2-b-line-height: 124.00000095367432%;
+
+  --labels-l2-r-font-family: "Nunito Sans", Helvetica;
+  --labels-l2-r-font-size: 14px;
+  --labels-l2-r-font-style: normal;
+  --labels-l2-r-font-weight: 600;
+  --labels-l2-r-letter-spacing: 0.42px;
+  --labels-l2-r-line-height: 124.00000095367432%;
+
+  --labels-l3-b-font-family: "Nunito Sans", Helvetica;
+  --labels-l3-b-font-size: 12px;
+  --labels-l3-b-font-style: normal;
+  --labels-l3-b-font-weight: 700;
+  --labels-l3-b-letter-spacing: 0.36px;
+  --labels-l3-b-line-height: 124.00000095367432%;
+
+  --labels-l3-r-font-family: "Nunito Sans", Helvetica;
+  --labels-l3-r-font-size: 12px;
+  --labels-l3-r-font-style: normal;
+  --labels-l3-r-font-weight: 600;
+  --labels-l3-r-letter-spacing: 0.36px;
+  --labels-l3-r-line-height: 124.00000095367432%;
+
+  --WF-body-body-medium-font-family: "Inter", Helvetica;
+}
+
+:root {
+  --animate-spin: spin 1s linear infinite;
+}
+
+.animate-fade-in {
+  animation: fade-in 1s var(--animation-delay, 0s) ease forwards;
+}
+
+.animate-fade-up {
+  animation: fade-up 1s var(--animation-delay, 0s) ease forwards;
+}
+
+.animate-marquee {
+  animation: marquee var(--duration) infinite linear;
+}
+
+.animate-marquee-vertical {
+  animation: marquee-vertical var(--duration) linear infinite;
+}
+
+.animate-shimmer {
+  animation: shimmer 8s infinite;
+}
+
+.animate-spin {
+  animation: var(--animate-spin);
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+@keyframes image-glow {
+  0% {
+    opacity: 0;
+    animation-timing-function: cubic-bezier(0.74, 0.25, 0.76, 1);
+  }
+
+  10% {
+    opacity: 0.7;
+    animation-timing-function: cubic-bezier(0.12, 0.01, 0.08, 0.99);
+  }
+
+  to {
+    opacity: 0.4;
+  }
+}
+
+@keyframes fade-in {
+  0% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes fade-up {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes shimmer {
+  0%,
+  90%,
+  to {
+    background-position: calc(-100% - var(--shimmer-width)) 0;
+  }
+
+  30%,
+  60% {
+    background-position: calc(100% + var(--shimmer-width)) 0;
+  }
+}
+
+@keyframes marquee {
+  0% {
+    transform: translate(0);
+  }
+
+  to {
+    transform: translateX(calc(-100% - var(--gap)));
+  }
+}
+
+@keyframes marquee-vertical {
+  0% {
+    transform: translateY(0);
+  }
+
+  to {
+    transform: translateY(calc(-100% - var(--gap)));
+  }
 }
