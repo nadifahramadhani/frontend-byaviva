@@ -2,7 +2,7 @@
 
 import React, { useRef } from "react";
 import Image from "next/image";
-import Link from "next/link"; // <--- PENTING: Import ini yang kurang sebelumnya
+import Link from "next/link";
 import {
   Search,
   Filter,
@@ -10,6 +10,8 @@ import {
   ChevronLeft,
   ArrowRight,
 } from "lucide-react";
+// 1. Import Motion
+import { motion } from "framer-motion";
 
 // --- Data Gambar ---
 const carouselImages = [
@@ -33,6 +35,35 @@ const galleryImages = [
   "/bento/bento10.png",
 ];
 
+// --- Variasi Animasi ---
+const fadeInUp = {
+  hidden: { opacity: 0, y: 60 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.6, ease: "easeOut" },
+  },
+};
+
+const staggerContainer = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+    },
+  },
+};
+
+const scaleIn = {
+  hidden: { opacity: 0, scale: 0.9 },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    transition: { duration: 0.5 },
+  },
+};
+
 export default function PortfolioPage() {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
@@ -51,29 +82,37 @@ export default function PortfolioPage() {
 
   return (
     <main className="w-full min-h-screen pt-[20px] pb-20 overflow-x-hidden [background:radial-gradient(50%_50%_at_64%_65%,rgba(255,228,215,1)_0%,rgba(255,248,238,1)_42%,rgba(222,240,245,1)_76%,rgba(255,248,230,1)_100%)]">
-      <style jsx global>{`
-        .no-scrollbar::-webkit-scrollbar {
-          display: none;
-        }
-        .no-scrollbar {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
-        }
-      `}</style>
-
-      {/* --- 1. HEADLINE SECTION --- */}
-      <section className="flex flex-col items-center text-center gap-4 px-4 py-5 md:py-10 max-w-4xl mx-auto">
-        <h1 className="text-3xl md:text-5xl font-bold text-slate-900 font-montserrat">
+      {/* --- 1. HEADLINE SECTION (ANIMATED) --- */}
+      <motion.section
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.3 }} // Animasi jalan sekali saat 30% terlihat
+        variants={staggerContainer}
+        className="flex flex-col items-center text-center gap-4 px-4 py-5 md:py-10 max-w-4xl mx-auto"
+      >
+        <motion.h1
+          variants={fadeInUp}
+          className="text-3xl md:text-5xl font-bold text-slate-900 font-montserrat"
+        >
           Portofolio By Aviva
-        </h1>
-        <p className="text-base md:text-xl text-slate-600 max-w-2xl font-lato">
+        </motion.h1>
+        <motion.p
+          variants={fadeInUp}
+          className="text-base md:text-xl text-slate-600 max-w-2xl font-lato"
+        >
           Jelajahi dokumentasi terbaik kami yang mengabadikan kisah dan emosi di
           setiap detiknya.
-        </p>
-      </section>
+        </motion.p>
+      </motion.section>
 
-      {/* --- 2. CAROUSEL HIGHLIGHT --- */}
-      <section className="w-full flex flex-col items-center gap-8 mb-16">
+      {/* --- 2. CAROUSEL HIGHLIGHT (ANIMATED) --- */}
+      <motion.section
+        initial={{ opacity: 0, x: 50 }}
+        whileInView={{ opacity: 1, x: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.8 }}
+        className="w-full flex flex-col items-center gap-8 mb-16"
+      >
         {/* Horizontal Scroll Container */}
         <div
           ref={scrollContainerRef}
@@ -81,8 +120,13 @@ export default function PortfolioPage() {
         >
           <div className="flex gap-6 w-max mx-auto px-4">
             {carouselImages.map((src, index) => (
-              <div
+              <motion.div
                 key={index}
+                // Animasi masuk untuk setiap item carousel
+                initial={{ opacity: 0, scale: 0.8 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
                 className="relative w-[280px] h-[380px] md:w-[320px] md:h-[450px] rounded-[30px] overflow-hidden shadow-xl flex-shrink-0 snap-center transition-all duration-300 hover:scale-105 hover:shadow-2xl group"
               >
                 <Image
@@ -92,13 +136,19 @@ export default function PortfolioPage() {
                   className="object-cover transition-transform duration-700 group-hover:scale-110"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              </div>
+              </motion.div>
             ))}
           </div>
         </div>
 
         {/* Navigation & Caption */}
-        <div className="flex flex-col items-center gap-6 px-4">
+        <motion.div
+          variants={fadeInUp}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          className="flex flex-col items-center gap-6 px-4"
+        >
           <div className="flex gap-6">
             <button
               onClick={() => scroll("left")}
@@ -130,7 +180,6 @@ export default function PortfolioPage() {
             </p>
           </div>
 
-          {/* Tombol Booking Now (Sudah diganti jadi Link) */}
           <Link
             href="/booking"
             className="group inline-flex items-center justify-center gap-2 px-8 py-3 bg-cyan-800 text-white rounded-lg overflow-hidden transition-all hover:bg-cyan-900 hover:shadow-lg hover:-translate-y-1"
@@ -140,12 +189,18 @@ export default function PortfolioPage() {
             </span>
             <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
           </Link>
-        </div>
-      </section>
+        </motion.div>
+      </motion.section>
 
-      {/* --- 3. MAIN GALLERY SECTION --- */}
+      {/* --- 3. MAIN GALLERY SECTION (ANIMATED) --- */}
       <section className="w-full max-w-7xl mx-auto px-4 md:px-10">
-        <div className="bg-white/60 backdrop-blur-md rounded-[40px] p-6 md:p-10 shadow-lg border border-white/50">
+        <motion.div
+          initial={{ opacity: 0, y: 100 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.1 }}
+          transition={{ duration: 0.8 }}
+          className="bg-white/60 backdrop-blur-md rounded-[40px] p-6 md:p-10 shadow-lg border border-white/50"
+        >
           <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-8 border-b border-slate-200/60 pb-6">
             <h2 className="text-2xl md:text-3xl font-bold text-slate-900 font-montserrat">
               ByViva’s Portofolios
@@ -167,84 +222,79 @@ export default function PortfolioPage() {
             </div>
           </div>
 
-          <div className="flex flex-col gap-6">
+          {/* GRID GALLERY */}
+          {/* Menggunakan variants container untuk efek muncul berturutan */}
+          <motion.div
+            variants={staggerContainer}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.1 }}
+            className="flex flex-col gap-6"
+          >
             {/* Row 1 */}
             <div className="flex flex-col md:flex-row gap-6 h-auto md:h-[300px]">
-              <div className="relative w-full md:w-1/3 h-[250px] md:h-full rounded-[30px] overflow-hidden group shadow-md">
-                <Image
-                  src={galleryImages[0]}
-                  alt="Gallery 1"
-                  fill
-                  className="object-cover transition-transform duration-700 group-hover:scale-110"
-                />
-              </div>
-              <div className="relative w-full md:w-1/3 h-[250px] md:h-full rounded-[30px] overflow-hidden group shadow-md">
-                <Image
-                  src={galleryImages[1]}
-                  alt="Gallery 2"
-                  fill
-                  className="object-cover transition-transform duration-700 group-hover:scale-110"
-                />
-              </div>
-              <div className="relative w-full md:w-1/3 h-[250px] md:h-full rounded-[30px] overflow-hidden group shadow-md">
-                <Image
-                  src={galleryImages[2]}
-                  alt="Gallery 3"
-                  fill
-                  className="object-cover transition-transform duration-700 group-hover:scale-110"
-                />
-              </div>
+              {[0, 1, 2].map((i) => (
+                <motion.div
+                  key={i}
+                  variants={scaleIn}
+                  className="relative w-full md:w-1/3 h-[250px] md:h-full rounded-[30px] overflow-hidden group shadow-md"
+                >
+                  <Image
+                    src={galleryImages[i]}
+                    alt={`Gallery ${i + 1}`}
+                    fill
+                    className="object-cover transition-transform duration-700 group-hover:scale-110"
+                  />
+                </motion.div>
+              ))}
             </div>
 
             {/* Row 2 */}
             <div className="flex flex-col md:flex-row gap-6 h-auto md:h-[500px]">
-              <div className="relative w-full md:w-1/3 h-[400px] md:h-full rounded-[30px] overflow-hidden group shadow-md">
-                <Image
-                  src={galleryImages[4]}
-                  alt="Gallery 5"
-                  fill
-                  className="object-cover transition-transform duration-700 group-hover:scale-110"
-                />
-              </div>
-              <div className="relative w-full md:w-1/3 h-[400px] md:h-full rounded-[30px] overflow-hidden group shadow-md">
-                <Image
-                  src={galleryImages[5]}
-                  alt="Gallery 6"
-                  fill
-                  className="object-cover transition-transform duration-700 group-hover:scale-110"
-                />
-              </div>
-              <div className="relative w-full md:w-1/3 h-[400px] md:h-full rounded-[30px] overflow-hidden group shadow-md">
-                <Image
-                  src={galleryImages[6]}
-                  alt="Gallery 7"
-                  fill
-                  className="object-cover transition-transform duration-700 group-hover:scale-110"
-                />
-              </div>
+              {[4, 5, 6].map((i) => (
+                <motion.div
+                  key={i}
+                  variants={scaleIn}
+                  className="relative w-full md:w-1/3 h-[400px] md:h-full rounded-[30px] overflow-hidden group shadow-md"
+                >
+                  <Image
+                    src={galleryImages[i]}
+                    alt={`Gallery ${i + 1}`}
+                    fill
+                    className="object-cover transition-transform duration-700 group-hover:scale-110"
+                  />
+                </motion.div>
+              ))}
             </div>
 
             {/* Row 3 */}
             <div className="flex flex-col md:flex-row gap-6 h-auto md:h-[300px]">
-              <div className="relative w-full md:w-1/3 h-[250px] md:h-full rounded-[30px] overflow-hidden group shadow-md">
+              {/* Custom logic for unequal widths */}
+              <motion.div
+                variants={scaleIn}
+                className="relative w-full md:w-1/3 h-[250px] md:h-full rounded-[30px] overflow-hidden group shadow-md"
+              >
                 <Image
                   src={galleryImages[7]}
                   alt="Gallery 8"
                   fill
                   className="object-cover transition-transform duration-700 group-hover:scale-110"
                 />
-              </div>
-              <div className="relative w-full md:w-2/3 h-[250px] md:h-full rounded-[30px] overflow-hidden group shadow-md">
+              </motion.div>
+              <motion.div
+                variants={scaleIn}
+                className="relative w-full md:w-2/3 h-[250px] md:h-full rounded-[30px] overflow-hidden group shadow-md"
+              >
                 <Image
                   src={galleryImages[8]}
                   alt="Gallery 9"
                   fill
                   className="object-cover transition-transform duration-700 group-hover:scale-110"
                 />
-              </div>
+              </motion.div>
             </div>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       </section>
     </main>
   );

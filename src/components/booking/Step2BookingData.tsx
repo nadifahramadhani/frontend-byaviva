@@ -184,7 +184,7 @@ export default function Step2BookingData({ onNext }: { onNext: () => void }) {
     data.discussion1Time;
 
   return (
-    <div className="mx-auto pb-10">
+    <div className="max-w-4xl mx-auto pb-10">
       <div className="text-center mb-8">
         <h3 className="text-3xl font-bold text-slate-800">Isi Data Booking</h3>
       </div>

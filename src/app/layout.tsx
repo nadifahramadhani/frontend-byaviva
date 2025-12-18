@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Navbar from "@/components/Navbar";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -20,11 +19,8 @@ export default function RootLayout({
 }) {
   return (
     <html lang="id">
-      <body className="pt-[94px]">
-        <Navbar /> {/* Navbar diletakkan di sini */}
-        {children}
-        {/* Opsional: Footer diletakkan di sini */}
-      </body>
+      {/* Hapus class pt-[94px] dan Navbar dari sini */}
+      <body>{children}</body>
     </html>
   );
 }

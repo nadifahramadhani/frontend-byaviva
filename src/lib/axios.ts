@@ -1,7 +1,7 @@
 import axios from "axios";
 
-// Ganti URL sesuai port backend NestJS kamu
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+// Fallback ke localhost jika env belum diset
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 const axiosInstance = axios.create({
   baseURL: BASE_URL,
@@ -10,34 +10,44 @@ const axiosInstance = axios.create({
   },
 });
 
-// --- INTERCEPTOR REQUEST (PENTING!) ---
-// Tugasnya: Sebelum request terbang, cek LocalStorage, ambil token, tempel ke Header.
-// src/lib/axios.ts
+// --- 1. INTERCEPTOR REQUEST (INI YANG KEMARIN HILANG) ---
+// Tugas: Ambil token dari LocalStorage dan tempel ke Header Authorization
+axiosInstance.interceptors.request.use(
+  (config) => {
+    // Pastikan kode ini jalan di browser (client-side)
+    if (typeof window !== "undefined") {
+      const token = localStorage.getItem("accessToken"); // Sesuai info kamu pake 'accessToken'
 
-axiosInstance.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response && error.response.status === 401) {
-      // Token basi. Hapus dan tendang ke login.
-      if (typeof window !== "undefined") {
-        localStorage.removeItem("accessToken");
-        window.location.href = "/auth/login";
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
       }
     }
+    return config;
+  },
+  (error) => {
     return Promise.reject(error);
   }
 );
 
-// --- INTERCEPTOR RESPONSE (OPSIONAL) ---
-// Tugasnya: Kalau token basi (401), otomatis redirect ke login
+// --- 2. INTERCEPTOR RESPONSE ---
+// Tugas: Jika token expired/salah (401), logout user otomatis
 axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
+    // Cek jika errornya 401 (Unauthorized)
     if (error.response && error.response.status === 401) {
-      console.error("Session expired or unauthorized. Redirecting to login...");
-      // Opsional: Hapus token & paksa logout jika 401 muncul terus menerus
-      // localStorage.removeItem("accessToken");
-      // window.location.href = "/auth/login";
+      console.error("Token tidak valid atau kadaluarsa. Redirecting...");
+
+      if (typeof window !== "undefined") {
+        // Hapus token agar bersih
+        localStorage.removeItem("accessToken");
+
+        // Redirect ke login hanya jika kita belum ada di halaman login
+        // (Mencegah loop refresh jika halaman login itu sendiri yang error 401)
+        if (!window.location.pathname.includes("/auth/login")) {
+          window.location.href = "/auth/login";
+        }
+      }
     }
     return Promise.reject(error);
   }

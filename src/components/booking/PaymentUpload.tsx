@@ -1,11 +1,9 @@
-// src/components/PaymentUpload.tsx
-
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useBooking } from "@/context/BookingContext";
-import axios from "axios";
-import { Copy, CheckCircle } from "lucide-react";
+// 1. GANTI INI: Pakai instance kita, jangan axios polos
+import axiosInstance from "@/lib/axios";
+import { Copy, CheckCircle, UploadCloud, Loader2 } from "lucide-react";
 
 interface PaymentUploadProps {
   transactionId: number;
@@ -17,11 +15,29 @@ const PaymentUpload = ({ transactionId, onSuccess }: PaymentUploadProps) => {
   const [loading, setLoading] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
 
-  // State specific to bill info
-  const { data: bookingData } = useBooking();
+  // State bill info
   const [billInfo, setBillInfo] = useState<any>(null);
   const [loadingBill, setLoadingBill] = useState(true);
   const [copied, setCopied] = useState(false);
+
+  // --- 1. FETCH BILL INFO (Pakai axiosInstance) ---
+  useEffect(() => {
+    const fetchBill = async () => {
+      try {
+        // Gak perlu header manual, axiosInstance urus tokennya
+        const res = await axiosInstance.get(
+          `/payments/bill-info/${transactionId}`
+        );
+        setBillInfo(res.data);
+      } catch (err) {
+        console.error("Gagal ambil bill info", err);
+      } finally {
+        setLoadingBill(false);
+      }
+    };
+
+    if (transactionId) fetchBill();
+  }, [transactionId]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
@@ -31,27 +47,20 @@ const PaymentUpload = ({ transactionId, onSuccess }: PaymentUploadProps) => {
     }
   };
 
+  // --- 2. UPLOAD ACTION (Pakai axiosInstance) ---
   const handleUpload = async () => {
     if (!file) return alert("Pilih file dulu!");
-
     setLoading(true);
 
     try {
-      const token = localStorage.getItem("accessToken");
-      if (!token) {
-        alert("Sesi habis atau belum login. Silakan login ulang.");
-        return;
-      }
-
       const formData = new FormData();
       formData.append("file", file);
 
-      const backendUrl = `http://localhost:3000/api/payments/dp/${transactionId}`;
-
-      await axios.post(backendUrl, formData, {
+      // URL cukup path-nya saja, BaseURL sudah diatur di axiosInstance
+      await axiosInstance.post(`/payments/dp/${transactionId}`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
-          Authorization: `Bearer ${token}`,
+          // Authorization gak perlu ditulis lagi
         },
       });
 
@@ -65,27 +74,6 @@ const PaymentUpload = ({ transactionId, onSuccess }: PaymentUploadProps) => {
       setLoading(false);
     }
   };
-
-  useEffect(() => {
-    const fetchBill = async () => {
-      try {
-        const token = localStorage.getItem("accessToken");
-        const res = await axios.get(
-          `http://localhost:3000/api/payments/bill-info/${transactionId}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-        setBillInfo(res.data);
-      } catch (err) {
-        console.error("Gagal ambil bill info", err);
-      } finally {
-        setLoadingBill(false);
-      }
-    };
-
-    if (transactionId) fetchBill();
-  }, [transactionId]);
 
   const formatRupiah = (num: number) =>
     new Intl.NumberFormat("id-ID", {
@@ -101,40 +89,43 @@ const PaymentUpload = ({ transactionId, onSuccess }: PaymentUploadProps) => {
   };
 
   if (loadingBill)
-    return <div className="text-center py-10">Memuat Detail Pesanan...</div>;
+    return (
+      <div className="text-center py-10 flex flex-col items-center gap-2 text-gray-400">
+        <Loader2 className="animate-spin" /> Memuat Tagihan...
+      </div>
+    );
 
   return (
-    // PARENT WRAPPER: Flex container untuk memisahkan kartu
-    <div className="w-full max-w-lg mx-auto flex flex-col gap-6 font-montserrat">
+    <div className="w-full flex flex-col gap-6 font-montserrat">
       {/* CARD 1: BILL INFO */}
-      <div className="bg-white rounded-xl overflow-hidden shadow-lg border border-gray-100">
-        <div className="p-6 md:p-8">
-          <div className="flex flex-col items-center gap-6">
-            {/* Rincian Harga */}
-            <div className="w-full space-y-4">
-              <div className="flex justify-between items-center">
-                <span className="font-semibold text-gray-600">
-                  Total Tagihan
-                </span>
-                <span className="font-bold text-slate-800">
+      <div className="bg-white rounded-xl overflow-hidden border border-gray-100 shadow-sm">
+        <div className="p-5 bg-gray-50 border-b border-gray-100">
+          <h4 className="font-bold text-slate-800 text-center">
+            Rincian Pembayaran
+          </h4>
+        </div>
+        <div className="p-6">
+          <div className="flex flex-col gap-4">
+            {/* Info Nominal */}
+            <div className="space-y-3 pb-4 border-b border-dashed border-gray-200">
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-gray-500">Total Tagihan</span>
+                <span className="font-bold text-slate-700">
                   {billInfo ? formatRupiah(billInfo.details.totalTagihan) : "-"}
                 </span>
               </div>
-              <div className="flex justify-between items-center bg-green-50 p-3 rounded-lg">
-                <span className="font-semibold text-green-700">
-                  Pembayaran DP
+              <div className="flex justify-between items-center bg-green-50 p-3 rounded-lg border border-green-100">
+                <span className="font-bold text-green-700 text-sm">
+                  Harus Dibayar (DP)
                 </span>
-                <span className="font-bold text-green-700">
+                <span className="font-bold text-green-700 text-lg">
                   {billInfo
                     ? formatRupiah(billInfo.details.dpHarusDibayar)
                     : "-"}
                 </span>
               </div>
-
-              <div className="flex justify-between items-center px-3">
-                <span className="font-semibold text-gray-600">
-                  Sisa Pembayaran
-                </span>
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-gray-500">Sisa Pelunasan</span>
                 <span className="font-bold text-orange-600">
                   {billInfo
                     ? formatRupiah(billInfo.details.sisaPelunasan)
@@ -144,75 +135,81 @@ const PaymentUpload = ({ transactionId, onSuccess }: PaymentUploadProps) => {
             </div>
 
             {/* Info Rekening */}
-            <div className="w-full flex flex-col items-center gap-3 text-center bg-gray-50 p-6 rounded-xl border border-dashed border-gray-300">
-              <div className="text-sm font-semibold text-gray-600">
-                Lakukan Pembayaran ke{" "}
-                <span className="font-bold text-slate-900">Bank Mandiri</span>
-              </div>
+            <div className="text-center space-y-2 pt-2">
+              <p className="text-xs text-gray-400 uppercase font-bold tracking-wider">
+                Transfer Bank Mandiri
+              </p>
 
-              <div className="w-full">
-                <p className="text-xs text-gray-400 mb-1">No. Rekening</p>
-
-                {/* Nomor Rekening + Tombol Copy */}
-                <div
-                  className="flex items-center justify-center gap-3 bg-white border border-gray-200 py-3 px-4 rounded-lg cursor-pointer hover:border-orange-300 transition-colors group"
-                  onClick={handleCopyRekening}
-                  title="Klik untuk menyalin"
-                >
-                  <span className="text-2xl md:text-3xl font-bold text-slate-800 tracking-wider">
-                    2345 7890 6511
-                  </span>
-                  {copied ? (
-                    <CheckCircle className="w-5 h-5 text-green-500" />
-                  ) : (
-                    <Copy className="w-5 h-5 text-gray-400 group-hover:text-orange-500" />
-                  )}
-                </div>
-                <p className="text-xs text-green-600 mt-1 h-4">
-                  {copied ? "Nomor rekening berhasil disalin!" : ""}
-                </p>
-              </div>
-
-              <div className="text-sm font-medium text-gray-500">
-                Atas Nama :{" "}
-                <span className="text-slate-800 font-bold">
-                  Nadifah Ramadhani
+              <div
+                className="flex items-center justify-center gap-3 bg-white border border-gray-200 py-3 px-4 rounded-xl cursor-pointer hover:border-blue-400 transition-all group active:scale-95"
+                onClick={handleCopyRekening}
+              >
+                <span className="text-xl md:text-2xl font-bold text-slate-800 tracking-widest font-mono">
+                  2345 7890 6511
                 </span>
+                {copied ? (
+                  <CheckCircle className="w-5 h-5 text-green-500" />
+                ) : (
+                  <Copy className="w-5 h-5 text-gray-400 group-hover:text-blue-500" />
+                )}
               </div>
+              <p className="text-sm font-medium text-slate-600">
+                a.n. Nadifah Ramadhani
+              </p>
             </div>
           </div>
         </div>
       </div>
 
       {/* CARD 2: UPLOAD FORM */}
-      <div className="bg-white rounded-xl overflow-hidden shadow-lg border border-gray-100">
-        <div className="p-6 md:p-8 bg-gray-50">
+      <div className="bg-white rounded-xl overflow-hidden border border-gray-100 shadow-sm">
+        <div className="p-6 md:p-8 bg-white">
           <h3 className="font-bold text-gray-800 mb-4 text-center">
-            Upload Bukti DP
+            Upload Bukti Transfer
           </h3>
 
-          {/* Preview Gambar */}
-          {preview && (
-            <img
-              src={preview}
-              alt="Preview"
-              className="w-full h-48 object-cover rounded-lg border border-gray-300 mb-4"
+          <div className="relative border-2 border-dashed border-gray-300 rounded-xl p-6 flex flex-col items-center justify-center text-center hover:bg-gray-50 transition-colors mb-4">
+            {preview ? (
+              <div className="relative w-full h-48">
+                <img
+                  src={preview}
+                  alt="Preview"
+                  className="w-full h-full object-contain rounded-lg"
+                />
+                <button
+                  onClick={() => {
+                    setFile(null);
+                    setPreview(null);
+                  }}
+                  className="absolute top-0 right-0 bg-red-500 text-white p-1 rounded-full text-xs shadow-md hover:bg-red-600"
+                >
+                  Ganti
+                </button>
+              </div>
+            ) : (
+              <>
+                <UploadCloud className="w-10 h-10 text-gray-300 mb-2" />
+                <p className="text-sm font-semibold text-gray-600">
+                  Klik untuk pilih gambar
+                </p>
+                <p className="text-xs text-gray-400">JPG, PNG (Max 5MB)</p>
+              </>
+            )}
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleFileChange}
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
             />
-          )}
-
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleFileChange}
-            className="block w-full text-sm text-slate-500 mb-4 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100"
-          />
+          </div>
 
           <button
             onClick={handleUpload}
-            disabled={loading}
-            className="w-full bg-slate-800 text-white font-bold py-3 rounded-lg hover:bg-slate-700 disabled:bg-gray-400 transition-all"
+            disabled={loading || !file}
+            className="w-full bg-slate-900 text-white py-3.5 rounded-xl font-bold hover:bg-slate-800 disabled:bg-gray-300 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
           >
-            {loading ? "Mengirim..." : "Kirim Bukti Pembayaran"}
+            {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+            {loading ? "Mengirim..." : "Konfirmasi Pembayaran"}
           </button>
         </div>
       </div>

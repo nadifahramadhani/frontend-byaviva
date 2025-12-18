@@ -5,7 +5,7 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 
 // Pastikan path ini benar
-const illustration = "/images/booking/pra_booking_illustration.png";
+const illustration = "/step/step1.png";
 const ADMIN_WA_NUMBER = "6282284300805";
 const WA_MESSAGE =
   "Halo Admin ByAviva, saya ingin diskusi konsep foto untuk booking...";

@@ -15,22 +15,21 @@ export default function Navbar() {
   // Contoh: const { user } = useAuth(); atau cek token di localStorage
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  // Simulasi cek login (Hapus useEffect ini jika sudah pakai Auth Context asli)
+  // Perbaikan: Tambahkan 'pathname' ke dependency array
   useEffect(() => {
-    // Contoh: Cek apakah ada token di localStorage
-    const token = localStorage.getItem("token");
-    // Jika ada token, kita anggap user login (sesuaikan dengan logic Anda)
-    // setIsLoggedIn(!!token);
+    // 1. Cek token di localStorage
+    // Pastikan nama key-nya "accessToken" (sesuai yang kita pakai di Sidebar/Login)
+    const token = localStorage.getItem("accessToken");
 
-    // Untuk demo saat ini, saya set TRUE (Ganti ke false untuk melihat tombol Login)
-    setIsLoggedIn(true);
-  }, []);
+    // 2. Update state: True jika token ada, False jika tidak
+    setIsLoggedIn(!!token);
+  }, [pathname]);
 
   const navItems = [
     { label: "Home", href: "/" },
-    { label: "Portofolio", href: "/portofolio" },
-    { label: "About", href: "/about" },
-    { label: "Booking", href: "/booking" },
+    { label: "Portofolio", href: "/main/portofolio" },
+    { label: "About", href: "/main/about" },
+    { label: "Booking", href: "/main/booking" },
   ];
 
   return (
