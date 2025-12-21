@@ -13,9 +13,6 @@ import {
 import { useRouter } from "next/navigation";
 import { formatDate, formatTime } from "@/lib/format-utils";
 import { PageHeaderCard } from "@/components/dashboard/PageHeaderCard";
-
-// --- IMPORT KOMPONEN BARU KITA ---
-import { BookingHeader } from "@/components/booking/detail/BookingHeader";
 import {
   PackageCard,
   ScheduleCard,
@@ -70,6 +67,10 @@ export default function BookingDetailPage() {
     setIsRescheduleOpen(false);
     setIsPaymentOpen(false);
     refreshData(); // Reload data otomatis
+  };
+
+  const handleInvoice = () => {
+    window.open(`/invoice/${bookingId}`, "_blank");
   };
 
   if (loading)
@@ -165,10 +166,15 @@ export default function BookingDetailPage() {
         {/* KOLOM KANAN */}
         <div className="space-y-8">
           <BookingFinancials
+            bookingId={booking.id}
+            clientName={booking.client?.clientName}
+            packageName={booking.layanan?.nama}
             pricing={booking.pricing}
             pembayaran={booking.pembayaran}
             status={booking.status}
-            onPayClick={() => setIsPaymentOpen(true)}
+            role="user" // 👈 SET USER (Default)
+            oonInvoiceClick={handleInvoice}
+            onPayClick={() => setIsPaymentOpen(true)} // 👈 User punya akses ini
           />
 
           {/* LOG AKTIVITAS (Inline or Extract) */}

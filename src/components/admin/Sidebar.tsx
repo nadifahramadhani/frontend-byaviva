@@ -3,7 +3,8 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+// 👇 1. PERBAIKI IMPORT: Gabungkan useRouter disini
+import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard,
   BookCheck,
@@ -14,6 +15,7 @@ import {
   FolderKanban,
   LogOut,
 } from "lucide-react";
+import axiosInstance from "@/lib/axios";
 
 const MENU_ITEMS = [
   { label: "Dashboard", icon: LayoutDashboard, href: "/admin/dashboard" },
@@ -27,9 +29,22 @@ const MENU_ITEMS = [
 
 export const Sidebar = () => {
   const pathname = usePathname();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    try {
+      await axiosInstance.post("/auth/logout");
+    } catch (error) {
+      console.error("Logout error:", error);
+    } finally {
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("accessToken");
+      }
+      router.push("/auth/login");
+    }
+  };
 
   return (
-    // Tambahkan 'border-r-0' atau hapus border-r jika ingin active item benar-benar menyatu tanpa garis pemisah
     <aside className="w-[254px] h-screen bg-white fixed top-0 left-0 border-r border-gray-200 flex flex-col z-20 overflow-y-auto">
       {/* --- LOGO SECTION --- */}
       <div className="flex flex-col items-center pt-[40px] pb-[30px] gap-2">
@@ -52,9 +67,7 @@ export const Sidebar = () => {
               key={index}
               className={`flex items-center gap-3 px-[20px] py-[15px] cursor-pointer transition-all border-l-4 ${
                 isActive
-                  ? // 👇 PERUBAHAN DISINI: Gunakan #F0F8FF agar sama dengan Main Content
-                    // Saya juga menghapus 'rounded' agar dia nempel ke kanan (opsional)
-                    "bg-[#F0F8FF] border-blue-600 text-slate-900 font-bold"
+                  ? "bg-[#F0F8FF] border-blue-600 text-slate-900 font-bold"
                   : "bg-white border-transparent text-gray-500 hover:bg-gray-50 hover:text-gray-700"
               }`}
             >
@@ -71,7 +84,10 @@ export const Sidebar = () => {
 
       {/* --- LOGOUT SECTION --- */}
       <div className="pb-8 mt-auto px-4">
-        <button className="w-full flex items-center gap-3 px-4 py-3 text-red-600 hover:bg-red-50 rounded-lg transition-all font-bold font-nunito-sans text-[16px]">
+        <button
+          onClick={handleLogout} // 👈 2. TAMBAHKAN INI AGAR TOMBOL BERFUNGSI
+          className="w-full flex items-center gap-3 px-4 py-3 text-red-600 hover:bg-red-50 rounded-lg transition-all font-bold font-nunito-sans text-[16px]"
+        >
           <LogOut size={22} />
           <span>Log Out</span>
         </button>

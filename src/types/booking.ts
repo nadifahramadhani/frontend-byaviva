@@ -1,10 +1,10 @@
-// src/types/booking.ts
-
+// --- TIPE UMUM (REUSABLE) ---
 export interface LayananType {
   id: number;
   nama: string;
   harga: number;
   deskripsi?: string;
+  konsepId?: number; // Tambahan opsional sesuai respon API
 }
 
 export interface KonsepType {
@@ -15,31 +15,20 @@ export interface KonsepType {
   image?: string;
 }
 
-// Update State agar menampung 3 jadwal
+// --- TIPE UNTUK FORM CLIENT (YANG LAMA TETAP ADA) ---
 export interface BookingState {
-  // Data Diri
   clientName: string;
   clientEmail: string;
   clientPhone: string;
   lokasi: string;
-
-  // Jadwal 1: Shoot (Utama)
   shootDate: Date | null;
   shootTime: string;
-
-  // Jadwal 2: Diskusi Awal
   discussion1Date: Date | null;
   discussion1Time: string;
-
-  // Jadwal 3: Diskusi Lanjutan (Opsional)
   discussion2Date: Date | null;
   discussion2Time: string;
-
-  // Data Produk
   selectedLayanan: LayananType | null;
   selectedKonsep: KonsepType | null;
-
-  // Response Backend
   createdBooking: BookingResponse | null;
 }
 
@@ -52,4 +41,56 @@ export interface BookingResponse {
     subtotal: number;
     discount: number;
   };
+}
+
+// --- [BARU] TIPE KHUSUS UNTUK DATA TABLE ADMIN ---
+// Sesuai dengan JSON response dari: http://localhost:3000/api/booking/admin/all
+export interface BookingAdminItem {
+  id: number;
+  userId: number;
+  layananId: number;
+  konsepId: number;
+  bookingNumber: string;
+  status: string; // 'waiting_payment' | 'dp_paid' | 'canceled' | etc
+  createdAt: string;
+
+  // Relasi (Nested Objects)
+  layanan: {
+    id: number;
+    nama: string;
+    harga: number;
+    deskripsi: string;
+    isActive: boolean;
+    konsepId: number;
+  };
+
+  client: {
+    id: number;
+    bookingId: number;
+    clientName: string;
+    clientPhone: string;
+    clientEmail: string;
+  };
+
+  schedule: {
+    id: number;
+    bookingId: number;
+    tanggalBooking: string; // ISO String format
+    startTime: string;
+    endTime: string;
+  };
+
+  pembayaran: {
+    id: number;
+    tipe: string;
+    jumlah: number;
+    status: string;
+    buktiBayarUrl: string;
+    paidAt: string | null;
+  }[];
+
+  lokasi?: {
+    id: number;
+    lokasi: string;
+  } | null;
 }

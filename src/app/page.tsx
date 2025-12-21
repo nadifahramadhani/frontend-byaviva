@@ -7,6 +7,7 @@ import { motion } from "framer-motion";
 import { IconArrowRight } from "@/components/Icons";
 import { Bento } from "@/components/Bento";
 import { BookingSteps } from "@/components/BookingSteps";
+import Navbar from "@/components/Navbar";
 
 // ... (Asset paths & Animation Variants TETAP SAMA, tidak perlu diubah) ...
 const bento = "/images/bento.svg";
@@ -154,8 +155,13 @@ const CtaLink = ({ text, href }: { text: string; href: string }) => (
 export default function HomePage() {
   return (
     <main className="w-full min-h-screen pt-[20px] [background:radial-gradient(50%_50%_at_64%_65%,rgba(255,228,215,1)_0%,rgba(255,248,238,1)_42%,rgba(222,240,245,1)_76%,rgba(255,248,230,1)_100%)]">
+      {/* 2. PASANG NAVBAR DISINI */}
+      {/* Kita bungkus div fixed/sticky agar menempel di atas */}
+      <div className="fixed top-0 left-0 w-full z-50">
+        <Navbar />
+      </div>
       {/* 1. HERO SECTION */}
-      <section className="py-5 md:py-10 px-4">
+      <section className="pt-[150px]">
         <SectionHeading
           title="By Aviva Visual Studio"
           subtitle="Solusi dokumentasi kreatif dan dinamis untuk setiap kebutuhan Anda"
