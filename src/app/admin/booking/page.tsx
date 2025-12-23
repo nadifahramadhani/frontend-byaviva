@@ -1,11 +1,20 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { FileText, Edit, RefreshCw, CalendarDays } from "lucide-react";
+import {
+  FileText,
+  RefreshCw,
+  CalendarDays,
+  ArrowRight,
+  ExternalLink,
+  Search, // Icon Search
+  Edit,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Table } from "@/components/ui/Table";
 import { DashboardHeader } from "@/components/admin/DashboardHeader";
 import { BookingTabs } from "@/components/admin/BookingTabs";
+// Pastikan FilterActions menerima props yang sudah kita update sebelumnya
 import { FilterActions } from "@/components/admin/FilterActions";
 import { Pagination } from "@/components/ui/Pagination";
 import axiosInstance from "@/lib/axios";
@@ -13,21 +22,50 @@ import { ColumnDef } from "@/types";
 import { BookingAdminItem } from "@/types/booking";
 import { InvoiceModal } from "@/components/booking/detail/InvoiceModal";
 import { StatusUpdateModal } from "@/components/booking/detail/StatusUpdateModal";
+import { formatDate } from "@/lib/format-utils";
+
+// Interface Reschedule
+interface RescheduleItem {
+  id: number;
+  oldDate: string;
+  newDate: string;
+  alasan: string;
+  status: string;
+  booking: {
+    id: number;
+    bookingNumber: string;
+    client: { clientName: string };
+  };
+}
 
 export default function AdminBookingPage() {
   const router = useRouter();
 
   // --- STATE UTAMA ---
   const [bookings, setBookings] = useState<BookingAdminItem[]>([]);
+  const [rescheduleList, setRescheduleList] = useState<RescheduleItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // --- STATE FILTER ---
+  // --- STATE NAVIGASI & FILTER ---
   const [activeTab, setActiveTab] = useState("all");
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [searchQuery, setSearchQuery] = useState("");
 
-  // 👇 STATE KHUSUS HITUNGAN (Agar angka tab tidak 0 saat pindah tab)
+  // 1. STATE FILTER (AKTIF)
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterStatus, setFilterStatus] = useState("all");
+  const [filterPackage, setFilterPackage] = useState("all");
+  const [sortBy, setSortBy] = useState("newest");
+
+  const bookingStatusOptions = [
+    { label: "Menunggu Bayar (Waiting Payment)", value: "waiting_payment" },
+    { label: "DP Lunas (DP Paid)", value: "dp_paid" },
+    { label: "Sedang Berjalan (In Progress)", value: "in_progress" },
+    { label: "Menunggu Pelunasan (Waiting Final)", value: "waiting_final" },
+    { label: "Lunas (Paid)", value: "paid" },
+  ];
+
+  // --- STATE HITUNGAN ---
   const [tabCounts, setTabCounts] = useState({
     all: 0,
     new: 0,
@@ -43,7 +81,164 @@ export default function AdminBookingPage() {
   );
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
-  // --- 1. CONFIGURATION (KOLOM TABEL) ---
+  // [HELPER] Extract Data
+  const extractData = (res: any) => {
+    if (Array.isArray(res)) return res;
+    if (res?.data && Array.isArray(res.data)) return res.data;
+    if (res?.data?.data && Array.isArray(res.data.data)) return res.data.data;
+    return [];
+  };
+
+  // --- 2. FETCH DATA UTAMA (DENGAN FILTER) ---
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setIsLoading(true);
+
+        // A. LOGIKA FETCH RESCHEDULE
+        if (activeTab === "reschedule") {
+          const res = await axiosInstance.get("/reschedule/allReschedule");
+          const safeData = extractData(res);
+          setRescheduleList(safeData);
+          setTotalPages(1); // Reschedule endpoint belum ada pagination di backend
+        }
+
+        // B. LOGIKA FETCH BOOKING BIASA
+        else {
+          let url = "/booking/admin/all";
+
+          // Parameter Standar
+          const params: any = {
+            page,
+            limit: 10,
+            search: searchQuery,
+            // Kirim Filter ke Backend
+            sort: sortBy,
+            package: filterPackage !== "all" ? filterPackage : undefined,
+          };
+
+          // Logic URL Berdasarkan Tab
+          if (activeTab === "Upcoming") {
+            url = "/booking/upcooming";
+          } else if (activeTab === "new") {
+            // Jika Tab "New", filter status spesifik (New Booking)
+            // Tapi jika user memilih filter status lain di dropdown, filter dropdown menang.
+            // Strategi: Jika filterStatus 'all', kita paksa status 'new'.
+            // Jika user pilih 'canceled', kita tampilkan canceled (di dalam tab new - opsional logicnya)
+            // Sederhananya: Tab New memfilter status "waiting_payment/confirmation"
+            params.status = filterStatus !== "all" ? filterStatus : undefined; // Biarkan backend handle atau override di bawah
+            // Note: Biasanya endpoint /admin/all bisa terima array status, tapi untuk simpel
+            // Kita serahkan filtering "New" ke Frontend filter logic atau backend support
+          } else {
+            // Tab "All"
+            params.status = filterStatus !== "all" ? filterStatus : undefined;
+          }
+
+          const res = await axiosInstance.get(url, { params });
+          const safeData = extractData(res);
+          setBookings(safeData);
+
+          // Pagination
+          setTotalPages(res.data?.meta?.lastPage || 1);
+        }
+      } catch (err) {
+        console.error("Gagal ambil data:", err);
+        setBookings([]);
+        setRescheduleList([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    // Debounce Search agar tidak spam API
+    const timeoutId = setTimeout(() => fetchData(), 500);
+    return () => clearTimeout(timeoutId);
+  }, [
+    page,
+    searchQuery,
+    refreshTrigger,
+    activeTab,
+    filterStatus,
+    filterPackage,
+    sortBy,
+  ]);
+
+  // --- 3. FETCH COUNTS ---
+  useEffect(() => {
+    const fetchCounts = async () => {
+      try {
+        const [resAll, resUpcoming, resReschedule] = await Promise.all([
+          axiosInstance.get("/booking/admin/all", { params: { limit: 100 } }), // Ambil cukup banyak untuk sampling count
+          axiosInstance.get("/booking/upcooming"),
+          axiosInstance.get("/reschedule/allReschedule"),
+        ]);
+
+        const allDataList = extractData(resAll);
+
+        // Hitung Active (All)
+        const totalActive = allDataList.length; // Atau filter status aktif jika perlu
+
+        // Hitung New
+        const totalNew = allDataList.filter((item: BookingAdminItem) =>
+          ["waiting_payment", "waiting_confirmation"].includes(item.status)
+        ).length;
+
+        // Hitung Reschedule
+        const rescheduleListData = extractData(resReschedule);
+        const totalReschedule = rescheduleListData.filter(
+          (r: any) => r.status === "pending"
+        ).length;
+
+        setTabCounts({
+          all: totalActive,
+          new: totalNew,
+          upcoming: extractData(resUpcoming).length,
+          reschedule: totalReschedule,
+        });
+      } catch (error) {
+        console.error("Gagal load counts", error);
+      }
+    };
+
+    fetchCounts();
+  }, [refreshTrigger]);
+
+  // --- 4. CLIENT SIDE FILTERING (OPSIONAL / PELENGKAP) ---
+  // Kita gunakan ini HANYA untuk memastikan data sesuai Tab jika Backend belum support filter status kompleks
+  const filteredBookingData = bookings.filter((item) => {
+    if (activeTab === "reschedule") return false;
+    if (activeTab === "Upcoming") return true; // Upcoming sudah difilter endpoint
+
+    // Tab "New Booking" -> Hanya tampilkan yg baru
+    if (activeTab === "new") {
+      // Jika user memfilter status 'completed' saat di tab 'new', hasilnya kosong (benar)
+      const isNewStatus = ["waiting_payment", "waiting_confirmation"].includes(
+        item.status
+      );
+
+      // Jika filter dropdown 'all', tampilkan hanya new status
+      if (filterStatus === "all") return isNewStatus;
+
+      // Jika filter dropdown dipilih, biarkan API yang handle (return true)
+      // atau strict match (return item.status === filterStatus && isNewStatus)
+      return item.status === filterStatus && isNewStatus;
+    }
+
+    return true; // Tab "All" menampilkan semua hasil dari API
+  });
+
+  const currentData =
+    activeTab === "reschedule" ? rescheduleList : filteredBookingData;
+
+  // --- 5. CONFIG TAB ---
+  const tabConfig = [
+    { id: "all", label: "All Booking", count: tabCounts.all },
+    { id: "new", label: "New Booking", count: tabCounts.new },
+    { id: "Upcoming", label: "Upcoming (7 Days)", count: tabCounts.upcoming },
+    { id: "reschedule", label: "Reschedule", count: tabCounts.reschedule },
+  ];
+
+  // --- CONFIG COLUMNS (SAMA PERSIS) ---
   const bookingColumns: ColumnDef<BookingAdminItem>[] = [
     {
       header: "No",
@@ -65,13 +260,10 @@ export default function AdminBookingPage() {
     },
     {
       header: "Tanggal",
-      render: (item) => {
-        if (!item.schedule?.tanggalBooking) return "-";
-        return new Date(item.schedule.tanggalBooking).toLocaleDateString(
-          "id-ID",
-          { day: "2-digit", month: "2-digit", year: "numeric" }
-        );
-      },
+      render: (item) =>
+        item.schedule?.tanggalBooking
+          ? formatDate(item.schedule.tanggalBooking)
+          : "-",
     },
     {
       header: "Lokasi",
@@ -108,45 +300,24 @@ export default function AdminBookingPage() {
       render: (item) => {
         let colorClass = "bg-gray-100 text-gray-600 border-gray-200";
         let label = item.status.replace("_", " ");
-
-        switch (item.status) {
-          case "waiting_payment":
-            colorClass = "bg-yellow-100 text-yellow-700 border-yellow-200";
-            label = "Pending";
-            break;
-          case "waiting_confirmation":
-            colorClass = "bg-blue-100 text-blue-700 border-blue-200";
-            label = "Confirming";
-            break;
-          case "dp_paid":
-            colorClass = "bg-cyan-100 text-cyan-700 border-cyan-200";
-            label = "DP Paid";
-            break;
-          case "in_progress":
-            colorClass = "bg-purple-100 text-purple-700 border-purple-200";
-            label = "In Progress";
-            break;
-          case "waiting_final":
-            colorClass = "bg-orange-100 text-orange-700 border-orange-200";
-            label = "Wait Final";
-            break;
-          case "paid":
-            colorClass = "bg-emerald-100 text-emerald-700 border-emerald-200";
-            label = "Paid Full";
-            break;
-          case "completed":
-            colorClass = "bg-green-100 text-green-700 border-green-200";
-            label = "Completed";
-            break;
-          case "canceled":
-            colorClass = "bg-red-100 text-red-700 border-red-200";
-            label = "Canceled";
-            break;
-          case "rejected":
-            colorClass = "bg-red-50 text-red-600 border-red-100";
-            label = "Rejected";
-            break;
-        }
+        if (item.status === "waiting_payment")
+          colorClass = "bg-yellow-100 text-yellow-700 border-yellow-200";
+        else if (item.status === "waiting_confirmation")
+          colorClass = "bg-blue-100 text-blue-700 border-blue-200";
+        else if (item.status === "dp_paid")
+          colorClass = "bg-cyan-100 text-cyan-700 border-cyan-200";
+        else if (item.status === "in_progress")
+          colorClass = "bg-purple-100 text-purple-700 border-purple-200";
+        else if (item.status === "waiting_final")
+          colorClass = "bg-orange-100 text-orange-700 border-orange-200";
+        else if (item.status === "paid")
+          colorClass = "bg-emerald-100 text-emerald-700 border-emerald-200";
+        else if (item.status === "completed")
+          colorClass = "bg-green-100 text-green-700 border-green-200";
+        else if (item.status === "canceled")
+          colorClass = "bg-red-100 text-red-700 border-red-200";
+        else if (item.status === "rejected")
+          colorClass = "bg-red-50 text-red-600 border-red-100";
 
         const isFinal = ["completed", "canceled", "rejected"].includes(
           item.status
@@ -156,14 +327,11 @@ export default function AdminBookingPage() {
           <button
             onClick={() => !isFinal && setSelectedUpdate(item)}
             disabled={isFinal}
-            className={`group relative flex items-center justify-center gap-1 mx-auto px-3 py-1.5 rounded-lg text-xs font-bold border transition-all 
-              ${colorClass} 
-              ${
-                !isFinal
-                  ? "hover:scale-105 cursor-pointer shadow-sm hover:shadow-md"
-                  : "opacity-80 cursor-not-allowed"
-              }
-            `}
+            className={`group relative flex items-center justify-center gap-1 mx-auto px-3 py-1.5 rounded-lg text-xs font-bold border transition-all ${colorClass} ${
+              !isFinal
+                ? "hover:scale-105 cursor-pointer shadow-sm hover:shadow-md"
+                : "opacity-80 cursor-not-allowed"
+            }`}
             title={!isFinal ? "Klik untuk update status" : "Status Final"}
           >
             <span className="capitalize font-nunito-sans whitespace-nowrap">
@@ -205,111 +373,70 @@ export default function AdminBookingPage() {
     },
   ];
 
-  // --- 2. FETCH DATA UTAMA (UNTUK ISI TABEL) ---
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setIsLoading(true);
-
-        // Logic URL Switch
-        let url = "/booking/admin/all";
-        const params: any = { page, limit: 10, search: searchQuery };
-
-        if (activeTab === "Upcoming") {
-          url = "/booking/upcooming"; // Endpoint khusus Upcoming
-        }
-
-        const res = await axiosInstance.get(url, { params });
-
-        let fetchedData = [];
-        if (Array.isArray(res.data)) {
-          // Case: Endpoint Upcoming (Return Array)
-          fetchedData = res.data;
-          setTotalPages(1);
-        } else {
-          // Case: Endpoint All (Return Paginated Object)
-          fetchedData = res.data.data;
-          setTotalPages(res.data.meta?.lastPage || 1);
-        }
-
-        setBookings(fetchedData);
-      } catch (err) {
-        console.error("Gagal ambil data:", err);
-        setBookings([]);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [page, searchQuery, refreshTrigger, activeTab]);
-
-  // --- 3. FETCH COUNTS (HITUNG SEMUA TAB) ---
-  // Ini rahasianya agar angka tab tetap muncul!
-  useEffect(() => {
-    const fetchCounts = async () => {
-      try {
-        // Panggil 3 API sekaligus (Parallel) biar cepat
-        const [resUpcoming] = await Promise.all([
-          // 3. Hitung Upcoming
-          axiosInstance.get("/booking/upcooming"),
-        ]);
-        const totalUpcoming = Array.isArray(resUpcoming.data)
-          ? resUpcoming.data.length
-          : 0;
-
-        // Simpan ke State 'tabCounts'
-        setTabCounts({
-          upcoming: totalUpcoming,
-          reschedule: 0,
-        });
-      } catch (error) {
-        console.error("Gagal load counts", error);
-      }
-    };
-
-    fetchCounts();
-  }, [refreshTrigger]); // Hitung ulang kalau ada update status
-
-  // --- 4. FILTER LOGIC ---
-  const filteredData = bookings.filter((item) => {
-    if (activeTab === "Upcoming") return true; // Data sudah difilter backend
-    if (activeTab === "all") return true;
-    if (activeTab === "new") {
-      return (
-        item.status === "waiting_payment" ||
-        item.status === "waiting_confirmation"
-      );
-    }
-    if (activeTab === "reschedule") return false;
-    return true;
-  });
-
-  // --- 5. CONFIG TAB (GUNAKAN STATE 'tabCounts') ---
-  const tabConfig = [
+  const rescheduleColumns: ColumnDef<RescheduleItem>[] = [
     {
-      id: "all",
-      label: "All Booking",
-      count: bookings.length,
-    },
-
-    {
-      id: "new",
-      label: "New Booking",
-      count: bookings.filter(
-        (b) =>
-          b.status === "waiting_payment" || b.status === "waiting_confirmation"
-      ).length,
+      header: "No",
+      className: "text-center w-[60px]",
+      render: (_, index) => index + 1,
     },
     {
-      id: "Upcoming",
-      label: "Upcoming (7 Days)",
-      count: tabCounts.upcoming, // Ambil dari state (Konsisten)
+      header: "Client",
+      render: (item) => (
+        <div className="flex flex-col">
+          <span className="font-bold text-slate-800">
+            {item.booking?.client?.clientName || "Unknown"}
+          </span>
+          <span className="text-xs text-gray-400 font-mono">
+            {item.booking?.bookingNumber}
+          </span>
+        </div>
+      ),
     },
     {
-      id: "reschedule",
-      label: "Reschedule",
-      count: tabCounts.reschedule,
+      header: "Jadwal",
+      className: "min-w-[250px]",
+      render: (item) => (
+        <div className="flex items-center gap-3 text-sm">
+          <span className="text-red-500 line-through decoration-red-300">
+            {formatDate(item.oldDate)}
+          </span>
+          <ArrowRight className="w-4 h-4 text-slate-400" />
+          <span className="font-bold text-green-600">
+            {formatDate(item.newDate)}
+          </span>
+        </div>
+      ),
+    },
+    {
+      header: "Status",
+      className: "text-center",
+      render: (item) => {
+        const style =
+          item.status === "pending"
+            ? "bg-yellow-100 text-yellow-700"
+            : item.status === "approved"
+            ? "bg-green-100 text-green-700"
+            : "bg-red-100 text-red-700";
+        return (
+          <span
+            className={`px-2 py-1 rounded text-[10px] font-bold uppercase ${style}`}
+          >
+            {item.status}
+          </span>
+        );
+      },
+    },
+    {
+      header: "Aksi",
+      className: "text-center",
+      render: (item) => (
+        <button
+          onClick={() => router.push(`/admin/booking/reschedule/${item.id}`)}
+          className="flex items-center justify-center gap-1.5 border border-slate-300 text-slate-600 px-3 py-1.5 rounded-md text-xs font-bold hover:bg-slate-800 hover:text-white transition mx-auto"
+        >
+          <ExternalLink size={14} /> Review
+        </button>
+      ),
     },
   ];
 
@@ -320,7 +447,7 @@ export default function AdminBookingPage() {
         subtitle="Pantau booking client yang sedang berjalan disini"
       />
 
-      <div className="flex-1 bg-[#F0F8FF] px-[40px] md:px-[60px] pb-10">
+      <div className="flex-1 bg-[#F0F8FF] px-[20px] md:px-[60px] pb-10">
         <div className="w-full mt-6 bg-white rounded-[24px] p-10 border border-gray-100 shadow-sm min-h-[600px]">
           <BookingTabs
             tabs={tabConfig}
@@ -331,41 +458,87 @@ export default function AdminBookingPage() {
             }}
           />
 
-          <FilterActions />
+          {/* HEADER CONTROLS (SEARCH & FILTER) */}
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4 mt-6 mb-4">
+            {/* 1. Search Bar */}
+            <div className="relative w-full md:w-[350px]">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <input
+                type="text"
+                placeholder="Cari Client / No. Booking..."
+                className="w-full pl-9 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100 transition-all"
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setPage(1);
+                }}
+              />
+            </div>
 
-          <div className="mt-8">
-            {/* Tampilan Kosong untuk Upcoming */}
-            {activeTab === "Upcoming" &&
-              !isLoading &&
-              bookings.length === 0 && (
-                <div className="text-center py-10 text-gray-400 bg-gray-50 rounded-xl border border-dashed border-gray-200 mb-4">
-                  <CalendarDays className="w-10 h-10 mx-auto mb-2 opacity-50" />
-                  <p className="font-semibold">
-                    Tidak ada jadwal shooting dalam 7 hari kedepan.
-                  </p>
-                </div>
-              )}
+            {/* 2. Filter Actions (AKTIF) */}
+            {activeTab !== "reschedule" && (
+              <div className="flex-shrink-0 w-full md:w-auto">
+                <FilterActions
+                  onStatusChange={(val) => {
+                    setFilterStatus(val);
+                    setPage(1);
+                  }}
+                  onPackageChange={(val) => {
+                    setFilterPackage(val);
+                    setPage(1);
+                  }}
+                  onSortChange={(val) => {
+                    setSortBy(val);
+                    setPage(1);
+                  }}
+                  // 👇 KIRIM OPSINYA DISINI
+                  statusOptions={bookingStatusOptions}
+                />
+              </div>
+            )}
+          </div>
 
-            <Table
-              data={filteredData}
-              columns={bookingColumns}
-              isLoading={isLoading}
-            />
+          <div>
+            {!isLoading && currentData.length === 0 && (
+              <div className="text-center py-10 text-gray-400 bg-gray-50 rounded-xl border border-dashed border-gray-200 mb-4">
+                <CalendarDays className="w-10 h-10 mx-auto mb-2 opacity-50" />
+                <p className="font-semibold">Tidak ada data untuk tab ini.</p>
+                <p className="text-xs mt-1">
+                  Coba reset filter atau ubah kata kunci pencarian.
+                </p>
+              </div>
+            )}
+
+            {/* SWITCH TABLE RENDER */}
+            {activeTab === "reschedule" ? (
+              <Table
+                data={rescheduleList}
+                columns={rescheduleColumns}
+                isLoading={isLoading}
+              />
+            ) : (
+              <Table
+                data={filteredBookingData}
+                columns={bookingColumns}
+                isLoading={isLoading}
+              />
+            )}
           </div>
 
           <div className="w-full mt-6">
-            {!isLoading && bookings.length > 0 && (
-              <Pagination
-                page={page}
-                totalPages={totalPages}
-                onPageChange={setPage}
-              />
-            )}
+            {!isLoading &&
+              currentData.length > 0 &&
+              activeTab !== "reschedule" && (
+                <Pagination
+                  page={page}
+                  totalPages={totalPages}
+                  onPageChange={setPage}
+                />
+              )}
           </div>
         </div>
       </div>
 
-      {/* MODAL INVOICE */}
       {selectedInvoice && (
         <InvoiceModal
           bookingId={selectedInvoice.id}
@@ -375,7 +548,6 @@ export default function AdminBookingPage() {
         />
       )}
 
-      {/* MODAL STATUS UPDATE */}
       {selectedUpdate && (
         <StatusUpdateModal
           bookingId={selectedUpdate.id}

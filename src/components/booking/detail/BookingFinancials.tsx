@@ -9,24 +9,25 @@ import {
   XCircle,
   Eye,
   X,
+  PlusCircle, // Icon baru
 } from "lucide-react";
 import { formatRupiah, formatDate } from "@/lib/format-utils";
-// 👇 IMPORT MODAL INVOICE
 import { InvoiceModal } from "@/components/booking/detail/InvoiceModal";
+// Import Modal Baru
+import { AdminPaymentModal } from "@/components/booking/detail/AdminPaymentModal";
 
 interface Props {
-  // 👇 DATA WAJIB BARU UNTUK INVOICE
   bookingId: number;
   clientName: string;
   packageName?: string;
-
   pricing: any;
   pembayaran: any[];
   status: string;
   role?: "user" | "admin";
   onPayClick?: () => void;
-  // onInvoiceClick kita hapus/opsional karena sekarang ditangani internal modal
   onVerifyPayment?: (id: number, status: "paid" | "rejected") => void;
+  // Callback agar halaman utama refresh data setelah admin upload
+  onSuccessAdminPay?: () => void;
 }
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
@@ -41,14 +42,23 @@ export const BookingFinancials = ({
   role = "user",
   onPayClick,
   onVerifyPayment,
+  onSuccessAdminPay, // Terima props baru ini
 }: Props) => {
   const isAdmin = role === "admin";
-
-  // State untuk Modal Gambar Bukti Bayar
   const [previewImage, setPreviewImage] = useState<string | null>(null);
-
-  // 👇 INI YANG TADINYA HILANG (FIX ERROR ReferenceError)
   const [showInvoice, setShowInvoice] = useState(false);
+
+  // State untuk Modal Admin
+  const [showAdminModal, setShowAdminModal] = useState(false);
+
+  // Hitung Total Terbayar (Yang statusnya PAID atau WAITING CONFIRMATION jika mau dianggap sementara)
+  // Biasanya sisa tagihan hanya menghitung yang sudah PAID.
+  const totalPaid = pembayaran
+    .filter((p) => p.status === "paid")
+    .reduce((acc, curr) => acc + Number(curr.jumlah), 0);
+
+  const remainingBill = Number(pricing.totalAmount) - totalPaid;
+  const isFullyPaid = remainingBill <= 0;
 
   return (
     <>
@@ -58,9 +68,8 @@ export const BookingFinancials = ({
           <h2 className="flex items-center gap-2 font-bold text-lg text-slate-800">
             <Wallet className="w-5 h-5 text-green-600" /> Keuangan
           </h2>
-          {/* Tombol Invoice Header */}
           <button
-            onClick={() => setShowInvoice(true)} // ✅ Sekarang aman
+            onClick={() => setShowInvoice(true)}
             className="text-xs font-bold text-slate-500 flex items-center gap-1 hover:text-slate-800 transition-colors"
           >
             <FileText className="w-3 h-3" /> Invoice
@@ -68,7 +77,7 @@ export const BookingFinancials = ({
         </div>
 
         <div className="p-6 flex flex-col">
-          {/* RINCIAN TAGIHAN */}
+          {/* RINCIAN TAGIHAN (SAMA SEPERTI KODEMU) */}
           <div className="space-y-3 pb-6 border-b border-dashed border-gray-300">
             <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
               Rincian Tagihan
@@ -93,9 +102,17 @@ export const BookingFinancials = ({
               <span>Total</span>
               <span>{formatRupiah(pricing.totalAmount)}</span>
             </div>
+
+            {/* Tampilkan Sisa Tagihan */}
+            {!isFullyPaid && (
+              <div className="flex justify-between text-sm font-semibold text-red-500 pt-1">
+                <span>Sisa Tagihan</span>
+                <span>{formatRupiah(remainingBill)}</span>
+              </div>
+            )}
           </div>
 
-          {/* RIWAYAT PEMBAYARAN */}
+          {/* RIWAYAT PEMBAYARAN (SAMA SEPERTI KODEMU) */}
           <div className="pt-6 space-y-4">
             <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
               Riwayat Pembayaran
@@ -184,14 +201,14 @@ export const BookingFinancials = ({
 
         {/* FOOTER ACTIONS */}
         <div className="p-4 bg-slate-50 border-t border-gray-200 flex flex-col gap-3">
-          {/* Tombol Invoice Footer */}
           <button
-            onClick={() => setShowInvoice(true)} // ✅ Sekarang aman
+            onClick={() => setShowInvoice(true)}
             className="w-full bg-white border border-gray-300 text-slate-700 py-2.5 rounded-xl font-bold hover:bg-gray-50 transition-all shadow-sm flex justify-center items-center gap-2 text-sm"
           >
             <FileText className="w-4 h-4" /> Lihat Invoice
           </button>
 
+          {/* TOMBOL UNTUK USER: Upload Pembayaran */}
           {!isAdmin && status === "waiting_payment" && onPayClick && (
             <button
               onClick={onPayClick}
@@ -200,19 +217,31 @@ export const BookingFinancials = ({
               <CreditCard className="w-4 h-4" /> Upload Pembayaran
             </button>
           )}
+
+          {/* TOMBOL UNTUK ADMIN: Input Pelunasan Manual */}
+          {/* Hanya muncul jika Admin, status bukan completed/rejected, dan masih ada sisa tagihan */}
+          {isAdmin &&
+            !isFullyPaid &&
+            status !== "completed" &&
+            status !== "rejected" &&
+            status !== "cancelled" && (
+              <button
+                onClick={() => setShowAdminModal(true)}
+                className="w-full bg-green-600 text-white py-3 rounded-xl font-bold hover:bg-green-700 transition-all shadow-lg flex justify-center items-center gap-2 text-sm"
+              >
+                <PlusCircle className="w-4 h-4" /> Input Pelunasan Cash/Manual
+              </button>
+            )}
         </div>
       </div>
 
-      {/* --- MODAL IMAGE PREVIEW --- */}
+      {/* --- MODAL IMAGE PREVIEW (SAMA) --- */}
       {previewImage && (
         <div
           className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200"
           onClick={() => setPreviewImage(null)}
         >
-          <div
-            className="relative bg-white p-2 rounded-xl shadow-2xl max-w-4xl max-h-[90vh] overflow-hidden"
-            onClick={(e) => e.stopPropagation()}
-          >
+          <div className="relative bg-white p-2 rounded-xl shadow-2xl max-w-4xl max-h-[90vh] overflow-hidden">
             <button
               onClick={() => setPreviewImage(null)}
               className="absolute top-4 right-4 z-10 bg-black/50 hover:bg-black/70 text-white p-1.5 rounded-full transition-colors"
@@ -237,6 +266,18 @@ export const BookingFinancials = ({
           onClose={() => setShowInvoice(false)}
         />
       )}
+
+      {/* --- MODAL ADMIN PAYMENT --- */}
+      <AdminPaymentModal
+        isOpen={showAdminModal}
+        onClose={() => setShowAdminModal(false)}
+        onSuccess={() => {
+          // Panggil refreshData di parent
+          if (onSuccessAdminPay) onSuccessAdminPay();
+        }}
+        bookingId={bookingId}
+        remainingBill={remainingBill}
+      />
     </>
   );
 };

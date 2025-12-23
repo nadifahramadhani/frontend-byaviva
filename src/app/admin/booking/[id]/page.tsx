@@ -209,7 +209,8 @@ export default function AdminBookingDetailPage() {
             onInvoiceClick={() =>
               window.open(`/invoice/${bookingId}`, "_blank")
             }
-            onVerifyPayment={handleVerifyPayment} // Pass fungsi verifikasi kesini
+            onVerifyPayment={handleVerifyPayment}
+            onSuccessAdminPay={refreshData}
           />
 
           {/* LOG AKTIVITAS */}
