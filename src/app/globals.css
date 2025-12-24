@@ -654,3 +654,279 @@
     transform: translateY(calc(-100% - var(--gap)));
   }
 }
+/* =========================================
+   CUSTOM CALENDAR STYLES (Fixed Alignment)
+   ========================================= */
+
+/* --- 1. BASE SETUP --- */
+.rbc-calendar {
+  font-family: "Nunito Sans", sans-serif !important;
+  color: #334155;
+}
+
+.rbc-month-view,
+.rbc-time-view,
+.rbc-header,
+.rbc-day-bg,
+.rbc-date-cell {
+  background-color: transparent;
+}
+
+/* --- 2. HEADER HARI --- */
+.rbc-header {
+  padding: 12px 0 !important; /* Kurangi padding atas bawah sedikit biar compact */
+  font-weight: 700 !important;
+  font-size: 0.9rem !important;
+  color: #1e293b !important;
+  text-transform: uppercase;
+  text-align: center;
+
+  /* BORDER FIX: Samakan border bawah */
+  border-bottom: 1px solid #e2e8f0 !important;
+
+  /* BORDER FIX: Matikan border kiri default di element anak, kita atur di parent */
+  border-left: none !important;
+}
+
+/* Container Pembungkus Header Hari */
+.rbc-time-header-content {
+  border-left: 1px solid #e2e8f0 !important; /* Border kiri utama container header */
+}
+
+/* Garis pemisah antar hari di header */
+.rbc-header + .rbc-header {
+  border-left: 1px solid #e2e8f0 !important;
+}
+
+/* Kolom Jam (Gutter Kiri) - PERBAIKAN POSISI ANGKA */
+/* Kolom Jam (Gutter Kiri) */
+.rbc-time-gutter .rbc-timeslot-group {
+  border-bottom: 1px solid #f1f5f9 !important;
+  font-size: 0.75rem !important;
+  font-weight: 700 !important;
+  color: #475569 !important;
+  background-color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  /* --- PERBAIKAN DI SINI --- */
+  /* JANGAN pakai auto, WAJIB 60px agar sama persis dengan grid kanan */
+  min-height: 60px !important;
+
+  /* BORDER FIX */
+  border-right: none !important;
+}
+/* Pastikan label jam tidak terpotong */
+.rbc-label {
+  line-height: 1;
+  display: block;
+  white-space: nowrap;
+}
+/* --- 3. MONTH VIEW --- */
+.rbc-month-view {
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 24px !important;
+  overflow: hidden;
+  background-color: #fff;
+}
+
+.rbc-month-row {
+  border-top: 1px solid #e2e8f0 !important;
+}
+.rbc-day-bg + .rbc-day-bg {
+  border-left: 1px solid #e2e8f0 !important;
+}
+.rbc-month-row .rbc-day-bg:first-child {
+  border-left: none !important;
+}
+
+/* --- 4. DATE CELL --- */
+.rbc-date-cell {
+  padding: 4px !important;
+  text-align: left;
+  font-weight: inherit;
+  font-size: 1rem;
+}
+
+/* --- 5. TODAY HIGHLIGHT --- */
+.rbc-today {
+  background-color: transparent !important;
+  border: none !important;
+}
+.rbc-now .rbc-date-cell {
+  color: inherit !important;
+  font-weight: inherit !important;
+}
+.rbc-off-range-bg {
+  background-color: #fcfcfc !important;
+}
+.rbc-off-range .rbc-date-cell {
+  color: #cbd5e1 !important;
+}
+
+/* --- 6. TIME VIEW (WEEK & DAY) - PERBAIKAN UTAMA --- */
+.rbc-time-view {
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 24px !important;
+  overflow: hidden;
+  background-color: #fff;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* Header Wrapper */
+.rbc-time-header {
+  border-bottom: 1px solid #e2e8f0 !important;
+  flex: 0 0 auto !important;
+  margin-right: 0 !important; /* Reset margin scrollbar bawaan */
+}
+
+/* Content Body Wrapper */
+.rbc-time-content {
+  border-top: none !important;
+  flex: 1 1 0% !important;
+  overflow-y: auto !important;
+
+  /* BORDER FIX: Tambahkan border kiri di konten utama agar sejajar dengan header */
+  border-left: 1px solid #e2e8f0 !important;
+}
+
+/* Kolom Jam (Gutter Kiri) */
+.rbc-time-gutter .rbc-timeslot-group {
+  border-bottom: 1px solid #f1f5f9 !important;
+  font-size: 0.75rem !important;
+  font-weight: 700 !important;
+  color: #475569 !important;
+  background-color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: auto !important;
+
+  /* BORDER FIX: Pastikan border kanan kolom jam menyatu dengan border kiri konten */
+  border-right: none !important;
+}
+
+/* Garis Grid Horizontal */
+.rbc-timeslot-group {
+  border-bottom: 1px solid #f1f5f9 !important;
+  min-height: auto !important;
+}
+
+/* Garis Grid Vertikal (Antar Hari) */
+.rbc-day-slot {
+  /* BORDER FIX: Gunakan border-left yang konsisten dengan header */
+  border-left: 1px solid #e2e8f0 !important;
+}
+
+/* Hapus border kiri di slot hari pertama agar tidak double dengan container */
+.rbc-time-content > .rbc-day-slot:first-child {
+  border-left: none !important;
+}
+
+/* Scrollbar Gutter Fix (Agar header tidak ketutup scrollbar) */
+.rbc-time-header.rbc-overflowing-header {
+  margin-right: 6px !important; /* Sesuaikan dengan lebar scrollbar kamu */
+}
+/* --- 7. EVENT CHIP (CONTAINER UTAMA) --- */
+.rbc-event {
+  background-color: transparent !important;
+  border: none !important;
+  padding: 0 !important; /* Reset padding default */
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* KHUSUS MONTH VIEW */
+.rbc-month-view .rbc-event {
+  position: relative;
+  height: auto !important;
+  min-height: fit-content !important;
+  margin-bottom: 2px !important; /* Jarak antar event vertikal */
+  padding: 0 4px !important; /* Jarak kiri kanan dari garis grid */
+}
+
+/* KHUSUS WEEK/DAY VIEW */
+.rbc-time-view .rbc-event {
+  /* Biarkan library mengatur posisi absolute */
+  /* Kita beri sedikit margin agar tidak nempel garis, tapi jangan kurangi width terlalu banyak */
+  left: 0.5% !important;
+  width: 99% !important;
+  margin-top: 1px !important; /* Jarak antar event tumpuk */
+}
+
+/* Konten di dalam event week view */
+.rbc-event-content {
+  height: 100%;
+  padding: 0 !important; /* Hapus padding internal library */
+  font-size: 11px;
+  line-height: 1.1; /* Line height rapat */
+}
+
+.rbc-event-label {
+  display: none !important;
+}
+
+.rbc-event:focus,
+.rbc-day-slot:focus,
+.rbc-date-cell:focus {
+  outline: none !important;
+}
+
+/* =========================================
+   FIX: REMOVE GAP (ALL DAY ROW)
+   ========================================= */
+
+/* Menyembunyikan sel "All Day" */
+.rbc-allday-cell {
+  display: none !important;
+}
+
+/* Menyembunyikan baris container "All Day" di header */
+/* Biasanya baris ke-2 di dalam header adalah area all-day */
+.rbc-time-header-content > .rbc-row:last-child {
+  display: none !important;
+}
+
+/* Memastikan Header Hari (Sun 21, Mon 22) langsung nempel ke border bawah */
+.rbc-time-header-content {
+  border-left: 1px solid #e2e8f0 !important;
+  border-bottom: 1px solid #e2e8f0 !important; /* Tambahkan border bawah penutup */
+}
+
+/* Hapus border bottom di elemen header text agar tidak double */
+.rbc-header {
+  border-bottom: none !important;
+}
+
+/* --- SCROLLBAR CANTIK (Untuk Kalender & Sidebar) --- */
+
+/* Untuk Chrome, Edge, Safari */
+.rbc-time-content::-webkit-scrollbar,
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.rbc-time-content::-webkit-scrollbar-track,
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.rbc-time-content::-webkit-scrollbar-thumb,
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #cbd5e1; /* Slate 300 */
+  border-radius: 10px;
+}
+
+.rbc-time-content::-webkit-scrollbar-thumb:hover,
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: #94a3b8; /* Slate 400 */
+}
+
+/* Hapus scrollbar aneh di container luar jika masih ada */
+body {
+  overflow-y: auto; /* Biarkan browser handle scroll utama */
+}
