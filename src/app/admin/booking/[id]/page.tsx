@@ -9,6 +9,7 @@ import {
   Activity,
   CheckCircle,
   XCircle,
+  FolderOpen, // [BARU] Import icon folder
 } from "lucide-react";
 import { formatDate, formatTime } from "@/lib/format-utils";
 
@@ -54,7 +55,6 @@ export default function AdminBookingDetailPage() {
   useEffect(() => {
     refreshData();
   }, [bookingId]);
-
   // --- 2. HANDLE RESCHEDULE (Approve/Reject) ---
   const handleRescheduleAction = async (
     rescheduleId: number,
@@ -74,7 +74,6 @@ export default function AdminBookingDetailPage() {
   };
 
   // --- 3. HANDLE VERIFIKASI PEMBAYARAN (Valid/Tolak) ---
-  // Pastikan HANYA ADA SATU fungsi ini
   const handleVerifyPayment = async (
     paymentId: number,
     status: "paid" | "rejected"
@@ -89,12 +88,11 @@ export default function AdminBookingDetailPage() {
     setActionLoading(true);
 
     try {
-      // Tembak API Verify Backend
       await axiosInstance.patch(`/payments/${paymentId}/verify`, {
         status: status,
       });
 
-      await refreshData(); // Refresh data agar UI terupdate
+      await refreshData();
       alert(
         `Pembayaran berhasil di-${status === "paid" ? "verifikasi" : "tolak"}`
       );
@@ -105,6 +103,16 @@ export default function AdminBookingDetailPage() {
       );
     } finally {
       setActionLoading(false);
+    }
+  };
+
+  // --- [BARU] HANDLE NAVIGASI KE FOLDER ---
+  const handleOpenFolder = () => {
+    // PERBAIKAN: Akses ke booking.folder.id, bukan booking.folderId
+    if (booking?.folder?.id) {
+      router.push(`/admin/gallery/${booking.folder.id}`);
+    } else {
+      alert("Folder belum dibuat.");
     }
   };
 
@@ -125,12 +133,30 @@ export default function AdminBookingDetailPage() {
   return (
     <div className="flex flex-col items-center w-full pb-20 bg-[#F0F8FF] min-h-screen">
       {/* HEADER AREA */}
-      <div className="w-full bg-white border-b border-gray-200 pb-5 pt-4 px-6 mb-6">
-        <div className="max-w-7xl mx-auto w-full">
-          <BookingHeader
-            bookingNumber={booking.bookingNumber}
-            status={booking.status}
-          />
+      <div className="w-full bg-white border-b border-gray-200 py-5 px-6 mb-6 sticky top-0 z-30 shadow-sm">
+        <div className="max-w-7xl mx-auto w-full flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          {/* Bagian Kiri: Judul & Status */}
+          {/* Menggunakan flex-1 agar mengambil sisa ruang yang ada */}
+          <div className="flex-1 w-full min-w-0">
+            <BookingHeader
+              bookingNumber={booking.bookingNumber}
+              status={booking.status}
+            />
+          </div>
+
+          {/* Bagian Kanan: Tombol Action */}
+          {/* Flex-shrink-0 agar tombol tidak gepeng jika judul kepanjangan */}
+          <div className="flex-shrink-0 flex items-center gap-3 w-full md:w-auto md:py-1">
+            {booking.folder?.id && (
+              <button
+                onClick={handleOpenFolder}
+                className="flex items-center justify-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-xl font-bold text-sm hover:bg-blue-700 transition-all shadow-md active:scale-95 w-full md:w-auto whitespace-nowrap"
+              >
+                <FolderOpen size={18} />
+                <span>Buka Folder Galeri</span>
+              </button>
+            )}
+          </div>
         </div>
       </div>
 

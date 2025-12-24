@@ -152,9 +152,7 @@ export default function AdminGalleryDetailPage() {
             >
               <ArrowLeft size={20} />
             </button>
-            <h1 className="text-xl font-bold truncate max-w-[200px]">
-              {folder.nama}
-            </h1>
+            <h1 className="text-xl font-bold max-w-[200px]">{folder.nama}</h1>
           </div>
           <div className="flex gap-3">
             <button

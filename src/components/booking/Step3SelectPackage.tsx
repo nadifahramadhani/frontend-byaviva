@@ -11,6 +11,7 @@ interface Layanan {
   deskripsi: string;
   isActive: boolean;
   konsepId: number;
+  fotoUrl?: string; // [FIX] Tambahkan properti fotoUrl
 }
 
 interface Konsep {
@@ -37,6 +38,29 @@ export default function Step3SelectPackage({
   const [concepts, setConcepts] = useState<Konsep[]>([]);
   const [packages, setPackages] = useState<Layanan[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Helper yang diperbaiki untuk handle URL
+  const getImageUrl = (url?: string) => {
+    if (!url) return "https://via.placeholder.com/600x400?text=No+Image";
+
+    // Jika URL sudah lengkap (http/https), pakai langsung
+    if (url.startsWith("http")) return url;
+
+    // Jika path relatif murni (misal: "konsep-123.jpg"), baru tambahkan base URL
+    // Hapus slash di depan jika ada agar tidak double
+    const cleanPath = url.startsWith("/") ? url.slice(1) : url;
+
+    // Asumsi: jika path tidak ada '/uploads/', tambahkan. Jika sudah ada, jangan.
+    // Tapi karena backend Anda sepertinya konsisten, cukup pakai base URL saja jika path relatif
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+
+    // Cek apakah path sudah mengandung 'uploads'
+    if (cleanPath.startsWith("uploads/")) {
+      return `${baseUrl}/${cleanPath}`;
+    }
+
+    return `${baseUrl}/uploads/${cleanPath}`;
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -96,13 +120,6 @@ export default function Step3SelectPackage({
     }).format(num);
   };
 
-  const getImageUrl = (imageName?: string) => {
-    if (!imageName) return "https://via.placeholder.com/600x400?text=Konsep";
-    return `${
-      process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"
-    }/uploads/${imageName}`;
-  };
-
   if (loading) {
     return (
       <div className="flex justify-center items-center py-20">
@@ -113,7 +130,6 @@ export default function Step3SelectPackage({
   }
 
   return (
-    // Tambahkan pb-32 agar konten paling bawah tidak tertutup footer yang nanti ada di Page
     <div className="max-w-5xl mx-auto pb-32">
       <div className="text-center mb-8">
         <h3 className="text-3xl font-bold text-slate-800">
@@ -141,11 +157,12 @@ export default function Step3SelectPackage({
               >
                 <div className="h-20 w-32 flex-shrink-0 rounded-lg overflow-hidden bg-gray-200">
                   <img
-                    src={getImageUrl(group.fotoUrl)}
+                    src={getImageUrl(group.fotoUrl)} // [FIX] Gunakan fungsi helper yang sudah diperbaiki
                     alt={group.judul}
                     className="w-full h-full object-cover"
                     onError={(e) => {
-                      (e.target as HTMLImageElement).src = getImageUrl();
+                      (e.target as HTMLImageElement).src =
+                        "https://via.placeholder.com/600x400?text=Error";
                     }}
                   />
                 </div>
@@ -187,6 +204,18 @@ export default function Step3SelectPackage({
                           DIPILIH
                         </div>
                       )}
+
+                      {/* [TAMBAHAN] Foto Paket (Opsional jika ingin ditampilkan) */}
+                      {pkg.fotoUrl && (
+                        <div className="h-32 w-full mb-3 rounded-lg overflow-hidden bg-gray-100">
+                          <img
+                            src={getImageUrl(pkg.fotoUrl)}
+                            alt={pkg.nama}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      )}
+
                       <div>
                         <h4 className="font-bold text-lg text-slate-800 mb-1">
                           {pkg.nama}
@@ -215,8 +244,6 @@ export default function Step3SelectPackage({
           );
         })
       )}
-
-      {/* FOOTER SUDAH DIHAPUS DARI SINI */}
     </div>
   );
 }
